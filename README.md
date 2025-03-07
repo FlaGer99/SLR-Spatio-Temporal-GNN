@@ -17,11 +17,7 @@
 
 ---
 
-<div style="background-color:rgb(255, 242, 221); padding: 10px; border-radius: 5px;">
-Our review examines the available literature on the use of spatio-temporal GNNs for time series classification and forecasting. It synthesizes insights from the fragmented journals' literature to support researchers, presenting comprehensive tables of model outcomes and benchmarks. To the best of our knowledge, this is the first systematic literature review to provide such a detailed compilation.  
-</div>
-
-<!-- > Our review examines the available literature on the use of spatio-temporal GNNs for time series classification and forecasting. It synthesizes insights from the fragmented journals' literature to support researchers, presenting comprehensive tables of model outcomes and benchmarks. To the best of our knowledge, this is the first systematic literature review to provide such a detailed compilation. -->
+> Our review examines the available literature on the use of spatio-temporal GNNs for time series classification and forecasting. It synthesizes insights from the fragmented journals' literature to support researchers, presenting comprehensive tables of model outcomes and benchmarks. To the best of our knowledge, this is the first systematic literature review to provide such a detailed compilation.
 
 <br>
 
