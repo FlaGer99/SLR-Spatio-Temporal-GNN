@@ -25,27 +25,23 @@ Bibtex reference to the paper
 ```
 
 ## 🗓️ History of the project
-<!-- omit from toc -->
-- [...] Submitted to *Neural Networks*
-- [2025-03-14] The first version of the pre-print has been published on ArXiv <a href="...">[link]</a>
+- [...] Paper submitted to the journal *Neural Networks*
+- [2025-03-14] The second version of the pre-print has been published on ArXiv <a href="...">[link]</a>
 - [2024-10-29] The first version of the pre-print has been published on ArXiv <a href="https://doi.org/10.48550/arXiv.2410.22377">[link]</a>
 
 ## 🗂️ Collection of papers
-<!-- omit from toc -->
-A total of 880 records were identified using the search query:
+A total of 879 records were identified using the search query:
 ```(("graph neural network" OR gnn) AND ``time series") AND (classification OR forecasting)```
-- 357 from Scopus;
-- 65 from IEEE Xplore;
+- 355 from Scopus;
+- 67 from IEEE Xplore;
 - 194 from Web of Science;
-- 264 from ACM.
+- 263 from ACM.
 
-After removing ... duplicates, ... records were manually evaluated. Among these
-- ... were discarded because they were considered outside the scope;
+After removing 253 duplicates, 626 records were manually evaluated. Among these
+- 333 were discarded because they were considered outside the scope;
 - 12 were discarded because they were not in English. 
 
-Hence, ... records are included in the review.
-
-[controllare numeri]
+Hence, 281 records are included in the review.
 
 ## 📑 Groups
 The selected journal papers are divided in groups according to the application domain. The groups of papers are presented in alphabetical order, with the exception of the "Generic" applications group (which cannot be directly attributed to a specific case study) and the "Other topics" group (focusing on specific problems of other disciplines):  
