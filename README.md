@@ -41,7 +41,7 @@ After removing 253 duplicates, 626 records were manually evaluated. Among these
 - 333 were discarded because they were considered outside the scope;
 - 12 were discarded because they were not in English. 
 
-Hence, 281 records are included in the review.
+Hence, **281 records** are included in the review.
 
 ## 📑 Groups
 The selected journal papers are divided in groups according to the application domain. The groups of papers are presented in alphabetical order, with the exception of the "Generic" applications group (which cannot be directly attributed to a specific case study) and the "Other topics" group (focusing on specific problems of other disciplines):  
