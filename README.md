@@ -11,7 +11,7 @@
 
 <div align="center">
 
-**[<a href="...">Pre-print Page (inserire link)</a>]**
+**<a href="...">[Pre-print Page (inserire link)]</a>**
 
 </div>
 
