@@ -31,7 +31,7 @@ Bibtex reference to the paper
 
 ## 🗂️ Collection of papers
 A total of 879 records were identified using the search query:
-```(("graph neural network" OR gnn) AND ``time series") AND (classification OR forecasting)```
+```(("graph neural network" OR gnn) AND "time series") AND (classification OR forecasting)```
 - 355 from Scopus;
 - 67 from IEEE Xplore;
 - 194 from Web of Science;
