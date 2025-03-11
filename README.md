@@ -11,7 +11,7 @@
 
 <div align="center">
 
-**<a href="...">[Pre-print Page (inserire link)]</a>**
+**<a href="https://doi.org/10.48550/arXiv.2410.22377">[Pre-print (first version)]</a>**
 
 </div>
 
@@ -26,6 +26,7 @@ Bibtex reference to the paper
 
 ## 🗓️ History of the project
 - [...] Paper submitted to the journal *Neural Networks*
+- [2025-03-10] Second version with all papers from 2024 has been completed
 - [2024-10-29] The first version of the pre-print has been published on ArXiv <a href="https://doi.org/10.48550/arXiv.2410.22377">[link]</a>
 
 ## 🗂️ Collection of papers
