@@ -19,10 +19,12 @@
 
 Our review examines the available literature on the use of spatio-temporal GNNs for time series classification and forecasting. It synthesizes insights from the fragmented journals' literature to support researchers, presenting comprehensive tables of model outcomes and benchmarks. To the best of our knowledge, this is the first systematic literature review to provide such a detailed compilation.
 
+<!--- (COMMENTATO)
 If you find this project interesting, please refer to our paper and cite it in your work:
 ```
 Bibtex reference to the paper
 ```
+-->
 
 ## 🗓️ History of the project
 - [...] Paper submitted to the journal *Neural Networks*
