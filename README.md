@@ -45,10 +45,11 @@ After removing 1617 duplicates and papers from journals outside the Q1–Q2 or c
 - 666 were discarded because they were considered outside the scope
 - 12 were discarded because they were not in English.
 
-As a result, **368 records** are included in the review, comprising **263 papers from Q1–Q2 journals** and **105 papers from A\* and A conferences**.
+As a result, **368 records** are included in the review, comprising **263 papers from Q1–Q2 journals** and **105 papers from A\* and A conferences**.  
 
 ## 📑 Groups
 The selected journal papers are divided in groups according to the application domain. The groups of papers are presented in alphabetical order, with the exception of the "Generic" applications group (which cannot be directly attributed to a specific case study) and the "Other topics" group (focusing on specific problems of other disciplines):  
+  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [⚡ Energy](#energy)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🌍 Environment](#environment)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [📈 Finance](#finance)  
@@ -58,8 +59,8 @@ The selected journal papers are divided in groups according to the application d
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🌐 Generic](#generic)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [📚 Other topics](#other-topics)  
 
-Here is a list of all the papers categorized into each group.
-
+Here is a list of all the papers categorized into each group (for a more detailed list of the selected papers, with year, group they belong to, case study, nature of the task, and reference number in the paper, click [here](List%20of%20selected%20papers.pdf)).  
+  
 <div id='energy'/>
 
 ### ⚡ Energy
