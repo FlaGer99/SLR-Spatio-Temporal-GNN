@@ -52,7 +52,7 @@ The selected journal papers are divided in groups according to the application d
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [⚡ Energy](#energy)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🌍 Environment](#environment)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [📈 Finance](#finance)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🧑‍⚕️ Health](#️health)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🧑‍⚕️ Health](#health)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🚗 Mobility](#mobility)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🔍 Predictive monitoring](#predictive-monitoring)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🌐 Generic](#generic)  
@@ -161,7 +161,6 @@ Here is a list of all the papers categorized into each group.
 - Multi-Granularity Spatio-Temporal Correlation Networks for Stock Trend Prediction (IEEE Access, 2024) <a href="https://doi.org/10.1109/ACCESS.2024.3393774">[link]</a>
 - A Graph-based Spatiotemporal Model for Energy Markets (CIKM, 2022) <a href="https://doi.org/10.1145/3511808.3557530">[link]</a>
 - Temporal and Heterogeneous Graph Neural Network for Financial Time Series Prediction (CIKM, 2022) <a href="https://doi.org/10.1145/3511808.3557089">[link]</a>
-
 
 <div id='health'/>
 
