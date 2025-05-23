@@ -5,7 +5,7 @@
   </b></h2>
 
   <p><i> by Flavio Corradini, Flavio Gerosa, Marco Gori, Carlo Lucheroni, Marco Piangerelli, Martina Zannotti <br>
-  Corresponding author: Martina Zannotti </i> <a href="mailto:martina.zannotti@example.com">✉️</a></p>
+  Corresponding author: Martina Zannotti </i> <a href="mailto:martina.zannotti@unicam.com">✉️</a></p>
 
 </div>
 
