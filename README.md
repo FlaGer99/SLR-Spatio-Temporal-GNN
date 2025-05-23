@@ -34,7 +34,7 @@ Bibtex reference to the paper
 - [2024-10-29] The first version of the pre-print has been published on ArXiv
 
 ## 🗂️ Collection of papers
-A total of 2663 records were identified using the search query:
+A total of 2663 records were identified using the search query:  
 ```(("graph neural network" OR gnn) AND "time series") AND (classification OR forecasting)```
 - 766 from Scopus;
 - 258 from IEEE Xplore;
