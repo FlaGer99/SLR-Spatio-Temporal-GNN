@@ -41,7 +41,7 @@ A total of 2663 records were identified using the search query:
 - 292 from Web of Science;
 - 1347 from ACM.
 
-After removing 1617 duplicates and papers from journals outside the Q1–Q2 rankings or conferences below the A*-A rating, 1046 records were manually evaluated. Among these
+After removing 1617 duplicates and papers from journals outside the Q1–Q2 or conferences not ranked A* or A, 1046 records were manually evaluated. Among these
 - 666 were discarded because they were considered outside the scope
 - 12 were discarded because they were not in English.
 
