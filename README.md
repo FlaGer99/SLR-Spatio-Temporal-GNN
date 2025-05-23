@@ -192,7 +192,7 @@ Here is a list of all the papers categorized into each group (for a more detaile
 
 <div id='mobility'/>
 
-### 🚗 Mobility (103 papers)
+### 🚗 Mobility (102 papers)
 - Make More Connections: Urban Traffic Flow Forecasting with Spatiotemporal Adaptive Gated Graph Convolution Network (ACM Trans. Intell. Syst. Technol., 2022) <a href="https://doi.org/10.1145/3488902">[link]</a>
 - 3DGCN: 3-Dimensional Dynamic Graph Convolutional Network for Citywide Crowd Flow Prediction (ACM Trans. Knowl. Discov. Data, 2021) <a href="https://doi.org/10.1145/3451394">[link]</a>
 - Crowd Flow Prediction for Irregular Regions with Semantic Graph Attention Network (ACM Trans. Intell. Syst. Technol., 2022) <a href="https://doi.org/10.1145/3501805">[link]</a>
@@ -217,7 +217,6 @@ Here is a list of all the papers categorized into each group (for a more detaile
 - Graph Attention LSTM: A Spatiotemporal Approach for Traffic Flow Forecasting (IEEE Intelligent Transportation Systems Magazine, 2022) <a href="https://doi.org/10.1109/MITS.2020.2990165">[link]</a>
 - Multi-featured spatial-temporal and dynamic multi-graph convolutional network for metro passenger flow prediction (Connection Science, 2022) <a href="https://doi.org/10.1080/09540091.2022.2061915">[link]</a>
 - TFGAN: Traffic forecasting using generative adversarial network with multi-graph convolutional network (Knowledge-Based Systems, 2022) <a href="https://doi.org/10.1016/j.knosys.2022.108990">[link]</a>
-- Dc-stgcn: Dual-channel based graph convolutional networks for network traffic forecasting (Electronics (Switzerland), 2021) <a href="https://doi.org/10.3390/electronics10091014">[link]</a>
 - Graph Sequence Neural Network with an Attention Mechanism for Traffic Speed Prediction (ACM Transactions on Intelligent Systems and Technology, 2022) <a href="https://doi.org/10.1145/3470889">[link]</a>
 - Spatio-temporal causal graph attention network for traffic flow prediction in intelligent transportation systems (PeerJ Computer Science, 2023) <a href="http://dx.doi.org/10.7717/peerj-cs.1484">[link]</a>
 - Dynamic spatio-temporal graph-based CNNs for traffic flow prediction (IEEE Access, 2020) <a href="https://doi.org/10.1109/ACCESS.2020.3027375">[link]</a>
@@ -427,12 +426,13 @@ Here is a list of all the papers categorized into each group (for a more detaile
 
 <div id='other-topics'/>
 
-### 📚 Other topics (33 papers)
+### 📚 Other topics (34 papers)
 - Automatic Modulation Classification Based on CNN-Transformer Graph Neural Network (Sensors, 2023) <a href="https://doi.org/10.3390/s23167281">[link]</a>
 - AvgNet: Adaptive Visibility Graph Neural Network and Its Application in Modulation Classification (IEEE Transactions on Network Science and Engineering, 2022) <a href="https://doi.org/10.1109/TNSE.2022.3146836">[link]</a>
 - EC-GCN: A encrypted traffic classification framework based on multi-scale graph convolution networks (Computer Networks, 2023) <a href="https://doi.org/10.1016/j.comnet.2023.109614">[link]</a>
 - Adaptive Dual-View WaveNet for urban spatial–temporal event prediction (Information Sciences, 2022) <a href="https://doi.org/10.1016/j.ins.2021.12.085">[link]</a>
 - A method for the spatiotemporal correlation prediction of the quality of multiple operational processes based on S-GGRU (Advanced Engineering Informatics, 2023) <a href="https://doi.org/10.1016/j.aei.2023.102219">[link]</a>
+- Dc-stgcn: Dual-channel based graph convolutional networks for network traffic forecasting (Electronics (Switzerland), 2021) <a href="https://doi.org/10.3390/electronics10091014">[link]</a>
 - Spatial-Temporal Cellular Traffic Prediction for 5G and Beyond: A Graph Neural Networks-Based Approach (IEEE Transactions on Industrial Informatics, 2023) <a href="https://doi.org/10.1109/TII.2022.3182768">[link]</a>
 - Graph neural networks for multivariate time series regression with application to seismic data (International Journal of Data Science and Analytics, 2023) <a href="https://doi.org/10.1007/s41060-022-00349-6">[link]</a>
 - Data-driven spatiotemporal modeling for structural dynamics on irregular domains by stochastic dependency neural estimation (Computer Methods in Applied Mechanics and Engineering, 2023) <a href="https://doi.org/10.1016/j.cma.2022.115831">[link]</a>
