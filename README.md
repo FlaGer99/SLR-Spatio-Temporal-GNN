@@ -41,11 +41,11 @@ A total of 2663 records were identified using the search query:
 - 292 from Web of Science;
 - 1347 from ACM.
 
-After removing 1617 duplicates and papers from journals outside the Q1–Q2 or conferences not ranked A* or A, 1046 records were manually evaluated. Among these
+After removing 1618 duplicates and papers from journals outside the Q1–Q2 or conferences not ranked A* or A, 1045 records were manually evaluated. Among these
 - 667 were discarded because they were considered outside the scope
 - 12 were discarded because they were not in English.
 
-As a result, **367 records** are included in the review, comprising **263 papers from Q1–Q2 journals** and **104 papers from A\* and A conferences**.  
+As a result, **366 records** are included in the review, comprising **262 papers from Q1–Q2 journals** and **104 papers from A\* and A conferences**.  
 
 ## 📑 Groups
 The selected journal papers are divided in groups according to the application domain. The groups of papers are presented in alphabetical order, with the exception of the "Generic" applications group (which cannot be directly attributed to a specific case study) and the "Other topics" group (focusing on specific problems of other disciplines):  
@@ -303,7 +303,6 @@ Here is a list of all the papers categorized into each group (for a more detaile
 - Cost-effective fault diagnosis of nearby photovoltaic systems using graph neural networks (Energy, 2023) <a href="https://doi.org/10.1016/j.energy.2022.126444">[link]</a>
 - A recursive multi-head graph attention residual network for high-speed train wheelset bearing fault diagnosis (Measurement Science and Technology, 2023) <a href="https://doi.org/10.1088/1361-6501/acb609">[link]</a>
 - Fault Diagnosis of Rolling Bearing Based on WHVG and GCN (IEEE Transactions on Instrumentation and Measurement, 2021) <a href="https://doi.org/10.1109/TIM.2021.3087834">[link]</a>
-- Fault Diagnosis of Energy Networks Based on Improved Spatial–Temporal Graph Neural Network With Massive Missing Data (IEEE Transactions on Automation Science and Engineering, 2023) <a href="https://doi.org/10.1109/TASE.2023.3281394">[link]</a>
 - Intelligent fault diagnosis of rolling bearings based on the visibility algorithm and graph neural networks (Journal of the Brazilian Society of Mechanical Sciences and Engineering, 2023) <a href="https://doi.org/10.1007/s40430-022-03913-0">[link]</a>
 - Fault Prediction for Electromechanical Equipment Based on Spatial-Temporal Graph Information (IEEE Transactions on Industrial Informatics, 2023) <a href="https://doi.org/10.1109/TII.2022.3176891">[link]</a>
 - Local-Global Correlation Fusion-Based Graph Neural Network for Remaining Useful Life Prediction (IEEE Transactions on Neural Networks and Learning Systems, 2023) <a href="https://doi.org/10.1109/TNNLS.2023.3330487">[link]</a>
