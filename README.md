@@ -297,7 +297,7 @@ Here is a list of all the papers categorized into each group (for a more detaile
 
 <div id='predictive-monitoring'/>
 
-### 🔍 Predictive monitoring (42 papers)
+### 🔍 Predictive monitoring (41 papers)
 - Correlation-Based Anomaly Detection Method for Multi-sensor System (Computational Intelligence and Neuroscience, 2022) <a href="https://doi.org/10.1155/2022/4756480">[link]</a>
 - Abnormality Detection of Blast Furnace Ironmaking Process Based on an Improved Diffusion Convolutional Gated Recurrent Unit Network (IEEE Transactions on Instrumentation and Measurement, 2023) <a href="https://doi.org/10.1109/TIM.2023.3320734">[link]</a>
 - Cost-effective fault diagnosis of nearby photovoltaic systems using graph neural networks (Energy, 2023) <a href="https://doi.org/10.1016/j.energy.2022.126444">[link]</a>
