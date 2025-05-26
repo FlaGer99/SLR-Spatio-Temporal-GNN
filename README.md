@@ -57,8 +57,6 @@ The selected journal papers are divided in groups according to the application d
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🔍 Predictive monitoring](#predictive-monitoring)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [🌐 Generic](#generic)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• [📚 Other topics](#other-topics)  
-
-Here is a list of all the papers categorized into each group (for a more detailed list of the selected papers, with year, group they belong to, case study, nature of the task, and reference number in the paper, click [here](List%20of%20selected%20papers.pdf)).  
   
 <div id='energy'/>
 
