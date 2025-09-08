@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Models and Benchmarks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .topic-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .topic-btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .topic-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #3498db;
+            color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .topic-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .datasets-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            display: none;
+        }
+
+        .datasets-container.show {
+            display: block;
+        }
+
+        .datasets-container h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .dataset-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .dataset-header {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            font-weight: 600;
+        }
+
+        .dataset-models {
+            padding: 0;
+        }
+
+        .model-item {
+            padding: 8px 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+
+        .model-item:last-child {
+            border-bottom: none;
+        }
+
+        .model-item:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Citation link styles */
+        .citation-link {
+            color: #3498db;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .citation-link:hover {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        .citation-link:visited {
+            color: #8e44ad;
+        }
+
+        /* Tooltip for citations without links */
+        .citation-tooltip {
+            position: relative;
+            color: #666;
+            border-bottom: 1px dashed #999;
+            cursor: help;
+        }
+
+        .citation-tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+
+        .citation-tooltip:hover::after {
+            opacity: 1;
+        }
+
+        .no-data-message {
+            text-align: center;
+            color: #6c757d;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+        }
+
+        .benchmarks-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .benchmarks-container h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .benchmark-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .benchmark-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+
+        .benchmark-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .icon {
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .topic-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .benchmark-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 style="margin-bottom: 0.2em;">🧠 Top Models & Benchmarks</h1>
+            <p>A concise overview of top models per each dataset and most common benchmarks in "A Systematic Literature Review of Spatio-Temporal Graph Neural Network Models for Time Series Forecasting and Classification"</p>
+        </div>
+
+        <!-- Topic Selection and Datasets Section -->
+        <div class="controls">
+            <h3>📁 Select Topic</h3>
+            <div class="topic-buttons">
+                <button class="topic-btn" data-topic="Energy" onclick="selectTopic('Energy')">
+                    <span class="icon">⚡</span>Energy
+                </button>
+                <button class="topic-btn" data-topic="Environment" onclick="selectTopic('Environment')">
+                    <span class="icon">🌍</span>Environment
+                </button>
+                <button class="topic-btn" data-topic="Finance" onclick="selectTopic('Finance')">
+                    <span class="icon">📈</span>Finance
+                </button>
+                <button class="topic-btn" data-topic="Health" onclick="selectTopic('Health')">
+                    <span class="icon">🧑‍⚕️</span>Health
+                </button>
+                <button class="topic-btn" data-topic="Mobility" onclick="selectTopic('Mobility')">
+                    <span class="icon">🚗</span>Mobility
+                </button>
+                <button class="topic-btn" data-topic="Predictive monitoring" onclick="selectTopic('Predictive monitoring')">
+                    <span class="icon">🔍</span>Predictive monitoring
+                </button>
+                <button class="topic-btn" data-topic="Generic" onclick="selectTopic('Generic')">
+                    <span class="icon">🌐</span>Generic
+                </button>
+                <button class="topic-btn" data-topic="Other topics" onclick="selectTopic('Other topics')">
+                    <span class="icon">📚</span>Other topics
+                </button>
+            </div>
+            
+            <!-- Datasets and Models Section -->
+            <div class="datasets-container" id="datasets-section">
+                <h3 id="datasets-title">🏆 Best performing models for <span id="selected-topic"></span> for each dataset</h3>
+                <div id="datasets-content">
+                    <!-- Dynamic content will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Benchmarks Section -->
+        <div class="benchmarks-container">
+            <h3>💻 Most used benchmarks across all topics</h3>
+            <ul class="benchmark-list">
+                <li class="benchmark-item">
+                    <span class="icon">🔧</span> Graph Convolutional Neural Network with Long-Short Term Memory (GC-LSTM) - 
+                    <a href="https://doi.org/10.1016/j.scitotenv.2019.01.333" target="_blank" class="citation-link">Qi et al., 2019</a>
+                </li>
+                <li class="benchmark-item">
+                    <span class="icon">🔧</span> Spatio-temporal Graph Convolutional Network (STGCN) - 
+                    <a href="https://doi.org/10.24963/ijcai.2018/505" target="_blank" class="citation-link">Yu et al., 2018</a>
+                </li>
+                <li class="benchmark-item">
+                    <span class="icon">🔧</span> Attention-based Spatial-Temporal Graph Convolutional Network (ASTGCN) - 
+                    <a href="https://doi.org/10.1609/aaai.v33i01.3301922" target="_blank" class="citation-link">Guo et al., 2019</a>
+                </li>
+                <li class="benchmark-item">
+                    <span class="icon">🔧</span> Diffusion Convolutional Recurrent Neural Network (DCRNN) - 
+                    <a href="https://openreview.net/forum?id=SJiHXGWAZ" target="_blank" class="citation-link">Li et al., 2018</a>
+                </li>
+                <li class="benchmark-item">
+                    <span class="icon">🔧</span> Multivariate Time Series Forecasting with Graph Neural Network (MTGNN) - 
+                    <a href="https://doi.org/10.1145/3394486.3403118" target="_blank" class="citation-link">Wu et al., 2020</a>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Research data with clickable citations
+        const researchData = {
+            "topics": {
+                "Energy": {
+                    "datasets": {},
+                    "description": "No common dataset identified"
+                },
+                "Environment": {
+                    "datasets": {
+                        "CCMP wind speed": [
+                            {
+                                "model": "Dynamic Adaptive Spatio-Temporal Graph Neural Network (DASTGN)",
+                                "citation": "Gao et al., 2023",
+                                "link": "https://doi.org/10.1016/j.asoc.2023.110294"
+                            },
+                            {
+                                "model": "Data-based Adaptive Graph Learning Network (DAGLN)",
+                                "citation": "Ren et al., 2023",
+                                "link": "https://doi.org/10.1016/j.energy.2022.126590"
+                            },
+                            {
+                                "model": "Multivariate Time Series Forecasting with Graph Neural Network (MTGNN)",
+                                "citation": "Wu et al., 2020",
+                                "link": "https://doi.org/10.1145/3394486.3403118"
+                            }
+                        ],
+                        "Chinese AQI": [
+                            {
+                                "model": "Hybrid Interpretable Neural Network and Graph Neural Network Model (INNGNN)",
+                                "citation": "Ding et al., 2023",
+                                "link": "https://doi.org/10.3390/atmos14121807"
+                            },
+                            {
+                                "model": "Meta-graph Convolutional Recurrent Network Model (MegaCRN)",
+                                "citation": "Jiang et al., 2023",
+                                "link": "https://doi.org/10.1609/aaai.v37i7.25976"
+                            }
+                        ]
+                    }
+                },
+                "Finance": {
+                    "datasets": {
+                        "A-share market": [
+                            {
+                                "model": "Knowledge Graph and Graph Convolution Neural Network (KG-GCN)",
+                                "citation": "Wang et al., 2023",
+                                "link": "https://doi.org/10.1016/j.asoc.2023.110595"
+                            },
+                            {
+                                "model": "Stock Price Movement Prediction via Convolutional Network with Adversarial Hypergraph Model (MONEY)",
+                                "citation": "Sun et al., 2023",
+                                "link": "https://doi.org/10.1016/j.aiopen.2023.10.002"
+                            }
+                        ]
+                    }
+                },
+                "Health": {
+                    "datasets": {},
+                    "description": "No common dataset identified"
+                },
+                "Mobility": {
+                    "datasets": {
+                        "METR-LA": [
+                            {
+                                "model": "Multichannel Fusion Graph Neural Network (MCFGNN)",
+                                "citation": "Chen et al., 2022",
+                                "link": "https://doi.org/10.1016/j.jocs.2022.101862"
+                            }
+                        ],
+                        "PEMS-BAY": [
+                            {
+                                "model": "Adaptive Multigraph Convolutional Networks (AMGCN)",
+                                "citation": "Li et al., 2024",
+                                "link": "https://doi.org/10.1007/s10489-024-05301-8"
+                            },
+                            {
+                                "model": "Spatio-temporal GNN Enhanced by a Scalable Time Series Pre-training Model (STEP)",
+                                "citation": "Shao et al., 2021",
+                                "link": "https://doi.org/10.1145/3534678.3539396"
+                            },
+                            {
+                                "model": "Multi View Spatial-Temporal Graph Neural Network (MVST-GNN)",
+                                "citation": "Li et al., 2022",
+                                "link": "https://doi.org/10.1093/comjnl/bxac086"
+                            },
+                            {
+                                "model": "Temporal Decomposition Based Dynamic Multi Granularity Graph Neural Network (TD2MG2NN)",
+                                "citation": "Zang et al., 2024",
+                                "link": "https://doi.org/10.1016/j.neucom.2024.128207"
+                            }
+                        ],
+                        "PEMS": [
+                            {
+                                "model": "Periodicity Aware Spatial-Temporal Adaptive Hypergraph Neural Network (PAHNN)",
+                                "citation": "Zhao et al., 2024",
+                                "link": "https://doi.org/10.1007/s10707-024-00527-7"
+                            }
+                        ]
+                    }
+                },
+                "Predictive monitoring": {
+                    "datasets": {
+                        "C-MAPSS": [
+                            {
+                                "model": "Convolution-Graph Attention Network (ConvGAT)",
+                                "citation": "Chen et al., 2023",
+                                "link": "https://doi.org/10.1109/JSEN.2023.3279365"
+                            },
+                            {
+                                "model": "Dual-stream Spatio-Temporal Fusion Network (DS-STFN)",
+                                "citation": "Zhang et al., 2024",
+                                "link": "https://doi.org/10.1016/j.jmsy.2024.07.004"
+                            }
+                        ]
+                    }
+                },
+                "Generic": {
+                    "datasets": {
+                        "Electricity": [
+                            {
+                                "model": "Static and Dynamic Graph Learning Network (SDGL)",
+                                "citation": "Li et al., 2023",
+                                "link": "https://doi.org/10.1016/j.patcog.2023.109423"
+                            },
+                            {
+                                "model": "Temporal Polynomial Graph Neural Network (TPGNN)",
+                                "citation": "Liu et al., 2022",
+                                "link": "https://dl.acm.org/doi/10.5555/3600270.3601681"
+                            }
+                        ],
+                        "Exchange rate": [
+                            {
+                                "model": "Discrete Graph Structure Learning for Time Series Model (GTS)",
+                                "citation": "Shang et al., 2021",
+                                "link": "https://openreview.net/pdf?id=WEHSlH5mOk"
+                            }
+                        ],
+                        "Solar energy": [
+                            {
+                                "model": "Dynamic Spatiotemporal Interactive Graph Neural Network (DSTIGNN)",
+                                "citation": "Gao et al., 2021",
+                                "link": "https://doi.org/10.1016/j.knosys.2023.110995"
+                            }
+                        ],
+                        "Traffic": [
+                            {
+                                "model": "Temporal Polynomial Graph Neural Network (TPGNN)",
+                                "citation": "Liu et al., 2022",
+                                "link": "https://dl.acm.org/doi/10.5555/3600270.3601681"
+                            },
+                            {
+                                "model": "Temporal Decomposition Enhanced Graph Neural Network for Multivariate Time Series Forecasting (TDG4-MSF)",
+                                "citation": "Miao et al., 2021",
+                                "link": "https://doi.org/10.1007/s10489-023-04987-6"
+                            }
+                        ]
+                    }
+                },
+                "Other topics": {
+                    "datasets": {},
+                    "description": "No common dataset identified"
+                },
+            }
+        };
+
+        let currentSelectedTopic = null;
+
+        // Function to create a clickable citation
+        function createCitation(citation, link) {
+            if (link) {
+                return `<a href="${link}" target="_blank" rel="noopener noreferrer" class="citation-link">${citation}</a>`;
+            } else {
+                return `<span class="citation-tooltip" data-tooltip="Link not available">${citation}</span>`;
+            }
+        }
+
+        // Function to select a topic and display its datasets
+        function selectTopic(topic) {
+            // Update button states
+            updateTopicButtons(topic);
+            
+            // Store current selection
+            currentSelectedTopic = topic;
+            
+            // Update the datasets section
+            displayTopicData(topic);
+            
+            // Show the datasets section
+            const datasetsSection = document.getElementById('datasets-section');
+            datasetsSection.classList.add('show');
+            
+            // Smooth scroll to datasets section
+            datasetsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Function to update topic button states
+        function updateTopicButtons(selectedTopic) {
+            const topicButtons = document.querySelectorAll('.topic-btn');
+            
+            topicButtons.forEach(button => {
+                const buttonTopic = button.getAttribute('data-topic');
+                
+                if (buttonTopic === selectedTopic) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+
+        // Function to display topic data (datasets and models)
+        function displayTopicData(topic) {
+            const topicData = researchData.topics[topic];
+            const titleElement = document.getElementById('selected-topic');
+            const contentElement = document.getElementById('datasets-content');
+            
+            // Update title
+            titleElement.textContent = topic;
+            
+            // Clear previous content
+            contentElement.innerHTML = '';
+            
+            // Check if topic has datasets
+            if (!topicData.datasets || Object.keys(topicData.datasets).length === 0) {
+                // Show no datasets message
+                const noDataDiv = document.createElement('div');
+                noDataDiv.className = 'no-data-message';
+                noDataDiv.innerHTML = `
+                    <span class="icon">ℹ️</span>
+                    ${topicData.description || 'No datasets available for this topic'}
+                `;
+                contentElement.appendChild(noDataDiv);
+                return;
+            }
+            
+            // Create cards for each dataset
+            Object.entries(topicData.datasets).forEach(([datasetName, models]) => {
+                const datasetCard = createDatasetCard(datasetName, models);
+                contentElement.appendChild(datasetCard);
+            });
+        }
+
+        // Function to create a dataset card with models
+        function createDatasetCard(datasetName, models) {
+            const card = document.createElement('div');
+            card.className = 'dataset-card';
+            
+            // Create header
+            const header = document.createElement('div');
+            header.className = 'dataset-header';
+            header.innerHTML = `<span class="icon">🗃️</span>${datasetName}`;
+            
+            // Create models container
+            const modelsContainer = document.createElement('div');
+            modelsContainer.className = 'dataset-models';
+            
+            // Add each model
+            models.forEach(modelData => {
+                const modelDiv = document.createElement('div');
+                modelDiv.className = 'model-item';
+                
+                // Handle both old string format and new object format for backward compatibility
+                if (typeof modelData === 'string') {
+                    modelDiv.innerHTML = `<span class="icon">🔥</span>${modelData}`;
+                } else {
+                    const citationHtml = createCitation(modelData.citation, modelData.link);
+                    modelDiv.innerHTML = `<span class="icon">🔥</span>${modelData.model} - ${citationHtml}`;
+                }
+                
+                modelsContainer.appendChild(modelDiv);
+            });
+            
+            // Assemble card
+            card.appendChild(header);
+            card.appendChild(modelsContainer);
+            
+            return card;
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Top Models App with Clickable Citations initialized');
+        });
+    </script>
+</body>
+</html>

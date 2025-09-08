@@ -11,7 +11,7 @@
 
 <div align="center">
 
-**<a href="https://doi.org/10.48550/arXiv.2410.22377">[Pre-print (second version)]</a>**
+<a href="https://doi.org/10.48550/arXiv.2410.22377">[**Pre-print (second version)**]</a>
 
 </div>
 
@@ -30,8 +30,15 @@ Bibtex reference to the paper
 <!--- (COMMENTATO)
 - [2025-05-28] Last version with all conference papers has been submitted to _Neural Networks_
 -->
+- [2025-09-08] Additional interactive material has been added to the repository
 - [2025-03-10] Second version with all papers from 2024 has been completed <a href="https://doi.org/10.48550/arXiv.2410.22377">[link]</a>
 - [2024-10-29] The first version of the pre-print has been published on ArXiv
+
+## 📚 Additional Interactive Material
+To improve the accessibility and usability of the information collected in the paper, we offer a set of additional interactive resources designed to provide deeper insights and facilitate exploration:
+- <a href="https://flager99.github.io/SLR-Spatio-Temporal-GNN/src/interactive-charts.html">Supplementary Statistics</a> - Explore additional statistics on the collected papers to uncover trends;
+- <a href="https://flager99.github.io/SLR-Spatio-Temporal-GNN/src/table-viewer.html">Table Viewer and Plotter</a> - Interact with result tables to sort models by performance and generate visual representations of the results;
+- <a href="https://flager99.github.io/SLR-Spatio-Temporal-GNN/src/models-overview.html">Top Models and Benchmarks</a> - Discover the highest-performing models for each dataset.
 
 ## 🗂️ Collection of papers
 A total of 2663 records were identified using the search query:  
@@ -410,7 +417,7 @@ The selected journal papers are divided in groups according to the application d
 - T-GAN: A deep learning framework for prediction of temporal complex networks with adaptive graph convolution and attention mechanism (Displays, 2021) <a href="https://doi.org/10.1016/j.displa.2021.102023">[link]</a>
 - AGCNT: Adaptive Graph Convolutional Network for Transformer-based Long Sequence Time-Series Forecasting (CIKM, 2021) <a href="https://doi.org/10.1145/3459637.3482054">[link]</a>
 - METRO: A Generic Graph Neural Network Framework for Multivariate Time Series Forecasting (VLDB, 2021) <a href="https://doi.org/10.14778/3489496.3489503">[link]</a>
-- DISCRETE GRAPH STRUCTURE LEARNING FOR FORECASTING MULTIPLE TIME SERIES (ICLR, 2021) <a href="https://openreview.net/pdf?id=WEHSlH5mOk">[link]</a>
+- Discrete Graph Structure Learning for Forecasting Multiple Time Series (ICLR, 2021) <a href="https://openreview.net/pdf?id=WEHSlH5mOk">[link]</a>
 - A New Framework for Smartphone Sensor-Based Human Activity Recognition Using Graph Neural Network (IEEE Sensors Journal, 2021) <a href="http://dx.doi.org/10.1109/JSEN.2020.3015726">[link]</a>
 - Z-GCNETs: Time Zigzags at Graph Convolutional Networks for Time Series Forecasting (ICML, 2021) <a href="https://par.nsf.gov/servlets/purl/10258413">[link]</a>
 - Spectral temporal graph neural network for multivariate time-series forecasting (NeurIPS, 2020) <a href="https://dl.acm.org/doi/10.5555/3495724.3497215">[link]</a>
