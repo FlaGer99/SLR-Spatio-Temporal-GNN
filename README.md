@@ -17,7 +17,31 @@
 
 ---
 
-Our review examines the available literature on the use of spatio-temporal GNNs for time series classification and forecasting. It synthesizes insights from the fragmented literature to support researchers, presenting comprehensive tables of model outcomes and benchmarks. To the best of our knowledge, this is the first systematic literature review to provide such a detailed compilation.
+<p>
+  Our review examines the available literature on the use of spatio-temporal GNNs for time series classification and forecasting. It synthesizes insights from the fragmented literature to support researchers, presenting comprehensive tables of model outcomes and benchmarks. To the best of our knowledge, this is the first systematic literature review to provide such a detailed compilation.
+</p>
+
+<p>
+  This repository serves as an interactive supplement, offering additional information and visualizations to complement the review.
+</p>
+
+<div style="
+  background-color: #E3F2FD; 
+  padding: 1em 1em;  /* spazio sopra/sotto ~1 linea, sx/dx 1em */
+  border-radius: 8px; 
+  text-align: center; 
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+">
+  <p style="font-size: 1em; margin: 0.25em 0;">
+    <strong>🚀 Check out our interactive resources!</strong>
+  </p>
+
+  <p style="margin: 0.25em 0;">
+    Dive deeper into our review findings with our 
+    <a href="#interactive-resources"><strong>interactive resources</strong></a>.
+  </p>
+</div>
+
 
 <!--- (COMMENTATO)
 If you find this project interesting, please refer to our paper and cite it in your work:
@@ -30,12 +54,15 @@ Bibtex reference to the paper
 <!--- (COMMENTATO)
 - [2025-05-28] Last version with all conference papers has been submitted to _Neural Networks_
 -->
-- [2025-09-08] Additional interactive material has been added to the repository
-- [2025-03-10] Second version with all papers from 2024 has been completed <a href="https://doi.org/10.48550/arXiv.2410.22377">[link]</a>
-- [2024-10-29] The first version of the pre-print has been published on ArXiv
+- [2025-09-08] Additional interactive material has been added to this repository
+- [2025-03-10] Second version has been published on ArXiv <a href="https://doi.org/10.48550/arXiv.2410.22377">[link]</a>
+- [2024-10-29] Initial pre-print available on ArXiv
 
-## 📚 Additional Interactive Material
-To improve the accessibility and usability of the information collected in the paper, we offer a set of additional interactive resources designed to provide deeper insights and facilitate exploration:
+<div id='interactive-resources'/>
+
+## 📚 Additional interactive resources
+To improve the accessibility and usability of the information collected in the paper, we offer a set of additional interactive resources designed to provide deeper insights and facilitate exploration:  
+
 - <a href="https://flager99.github.io/SLR-Spatio-Temporal-GNN/src/interactive-charts.html">Supplementary Statistics</a> - Explore additional statistics on the collected papers to uncover trends;
 - <a href="https://flager99.github.io/SLR-Spatio-Temporal-GNN/src/table-viewer.html">Table Viewer and Plotter</a> - Interact with result tables to sort models by performance and generate visual representations of the results;
 - <a href="https://flager99.github.io/SLR-Spatio-Temporal-GNN/src/models-overview.html">Top Models and Benchmarks</a> - Discover the highest-performing models for each dataset.
