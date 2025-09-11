@@ -47,14 +47,14 @@
             color: #2c3e50;
         }
 
-        .topic-buttons {
+        .group-buttons {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
 
-        .topic-btn {
+        .group-btn {
             width: 100%;
             padding: 12px 16px;
             border: 1px solid #ddd;
@@ -68,7 +68,7 @@
             text-align: center;
         }
 
-        .topic-btn:hover {
+        .group-btn:hover {
             background-color: #f8f9fa;
             border-color: #3498db;
             color: #3498db;
@@ -76,7 +76,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .topic-btn.active {
+        .group-btn.active {
             background-color: #3498db;
             color: white;
             border-color: #3498db;
@@ -244,7 +244,7 @@
                 padding: 10px;
             }
             
-            .topic-buttons {
+            .group-buttons {
                 grid-template-columns: 1fr;
             }
             
@@ -263,39 +263,39 @@
             <p>A concise overview of top models per each dataset and most common benchmarks in "A Systematic Literature Review of Spatio-Temporal Graph Neural Network Models for Time Series Forecasting and Classification"</p>
         </div>
 
-        <!-- Topic Selection and Datasets Section -->
+        <!-- Group Selection and Datasets Section -->
         <div class="controls">
-            <h3>📁 Select Topic</h3>
-            <div class="topic-buttons">
-                <button class="topic-btn" data-topic="Energy" onclick="selectTopic('Energy')">
+            <h3>📁 Select group</h3>
+            <div class="group-buttons">
+                <button class="group-btn" data-group="Energy" onclick="selectGroup('Energy')">
                     <span class="icon">⚡</span>Energy
                 </button>
-                <button class="topic-btn" data-topic="Environment" onclick="selectTopic('Environment')">
+                <button class="group-btn" data-group="Environment" onclick="selectGroup('Environment')">
                     <span class="icon">🌍</span>Environment
                 </button>
-                <button class="topic-btn" data-topic="Finance" onclick="selectTopic('Finance')">
+                <button class="group-btn" data-group="Finance" onclick="selectGroup('Finance')">
                     <span class="icon">📈</span>Finance
                 </button>
-                <button class="topic-btn" data-topic="Health" onclick="selectTopic('Health')">
+                <button class="group-btn" data-group="Health" onclick="selectGroup('Health')">
                     <span class="icon">🧑‍⚕️</span>Health
                 </button>
-                <button class="topic-btn" data-topic="Mobility" onclick="selectTopic('Mobility')">
+                <button class="group-btn" data-group="Mobility" onclick="selectGroup('Mobility')">
                     <span class="icon">🚗</span>Mobility
                 </button>
-                <button class="topic-btn" data-topic="Predictive monitoring" onclick="selectTopic('Predictive monitoring')">
+                <button class="group-btn" data-group="Predictive monitoring" onclick="selectGroup('Predictive monitoring')">
                     <span class="icon">🔍</span>Predictive monitoring
                 </button>
-                <button class="topic-btn" data-topic="Generic" onclick="selectTopic('Generic')">
+                <button class="group-btn" data-group="Generic" onclick="selectGroup('Generic')">
                     <span class="icon">🌐</span>Generic
                 </button>
-                <button class="topic-btn" data-topic="Other topics" onclick="selectTopic('Other topics')">
-                    <span class="icon">📚</span>Other topics
+                <button class="group-btn" data-group="Other groups" onclick="selectGroup('Other groups')">
+                    <span class="icon">📚</span>Other groups
                 </button>
             </div>
             
             <!-- Datasets and Models Section -->
             <div class="datasets-container" id="datasets-section">
-                <h3 id="datasets-title">🏆 Best performing models for <span id="selected-topic"></span> for each dataset</h3>
+                <h3 id="datasets-title">🏆 Best performing models for each dataset in the "<span id="selected-group"></span>" group</h3>
                 <div id="datasets-content">
                     <!-- Dynamic content will be inserted here -->
                 </div>
@@ -304,7 +304,7 @@
 
         <!-- Benchmarks Section -->
         <div class="benchmarks-container">
-            <h3>💻 Most used benchmarks across all topics</h3>
+            <h3>💻 Most used benchmarks across all groups</h3>
             <ul class="benchmark-list">
                 <li class="benchmark-item">
                     <span class="icon">🔧</span> Graph Convolutional Neural Network with Long-Short Term Memory (GC-LSTM) - 
@@ -344,7 +344,7 @@
     <script>
         // Research data with clickable citations
         const researchData = {
-            "topics": {
+            "groups": {
                 "Energy": {
                     "datasets": {},
                     "description": "No common dataset identified"
@@ -521,14 +521,14 @@
                         ]
                     }
                 },
-                "Other topics": {
+                "Other groups": {
                     "datasets": {},
                     "description": "No common dataset identified"
                 },
             }
         };
 
-        let currentSelectedTopic = null;
+        let currentSelectedGroup = null;
 
         // Function to create a clickable citation
         function createCitation(citation, link) {
@@ -539,16 +539,16 @@
             }
         }
 
-        // Function to select a topic and display its datasets
-        function selectTopic(topic) {
+        // Function to select a group and display its datasets
+        function selectGroup(group) {
             // Update button states
-            updateTopicButtons(topic);
+            updateGroupButtons(group);
             
             // Store current selection
-            currentSelectedTopic = topic;
+            currentSelectedGroup = group;
             
             // Update the datasets section
-            displayTopicData(topic);
+            displayGroupData(group);
             
             // Show the datasets section
             const datasetsSection = document.getElementById('datasets-section');
@@ -558,14 +558,14 @@
             datasetsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        // Function to update topic button states
-        function updateTopicButtons(selectedTopic) {
-            const topicButtons = document.querySelectorAll('.topic-btn');
+        // Function to update group button states
+        function updateGroupButtons(selectedGroup) {
+            const groupButtons = document.querySelectorAll('.group-btn');
             
-            topicButtons.forEach(button => {
-                const buttonTopic = button.getAttribute('data-topic');
+            groupButtons.forEach(button => {
+                const buttonGroup = button.getAttribute('data-group');
                 
-                if (buttonTopic === selectedTopic) {
+                if (buttonGroup === selectedGroup) {
                     button.classList.add('active');
                 } else {
                     button.classList.remove('active');
@@ -573,33 +573,33 @@
             });
         }
 
-        // Function to display topic data (datasets and models)
-        function displayTopicData(topic) {
-            const topicData = researchData.topics[topic];
-            const titleElement = document.getElementById('selected-topic');
+        // Function to display group data (datasets and models)
+        function displayGroupData(group) {
+            const groupData = researchData.groups[group];
+            const titleElement = document.getElementById('selected-group');
             const contentElement = document.getElementById('datasets-content');
             
             // Update title
-            titleElement.textContent = topic;
+            titleElement.textContent = group;
             
             // Clear previous content
             contentElement.innerHTML = '';
             
-            // Check if topic has datasets
-            if (!topicData.datasets || Object.keys(topicData.datasets).length === 0) {
+            // Check if group has datasets
+            if (!groupData.datasets || Object.keys(groupData.datasets).length === 0) {
                 // Show no datasets message
                 const noDataDiv = document.createElement('div');
                 noDataDiv.className = 'no-data-message';
                 noDataDiv.innerHTML = `
                     <span class="icon">ℹ️</span>
-                    ${topicData.description || 'No datasets available for this topic'}
+                    ${groupData.description || 'No datasets available for this group'}
                 `;
                 contentElement.appendChild(noDataDiv);
                 return;
             }
             
             // Create cards for each dataset
-            Object.entries(topicData.datasets).forEach(([datasetName, models]) => {
+            Object.entries(groupData.datasets).forEach(([datasetName, models]) => {
                 const datasetCard = createDatasetCard(datasetName, models);
                 contentElement.appendChild(datasetCard);
             });
