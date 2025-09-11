@@ -25,23 +25,8 @@
   This repository serves as an interactive supplement, offering additional information and visualizations to complement the review.
 </p>
 
-<div style="
-  background-color: #E3F2FD; 
-  padding: 1em 1em;  /* spazio sopra/sotto ~1 linea, sx/dx 1em */
-  border-radius: 8px; 
-  text-align: center; 
-  box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-">
-  <p style="font-size: 1em; margin: 0.25em 0;">
-    <strong>🚀 Check out our interactive resources!</strong>
-  </p>
-
-  <p style="margin: 0.25em 0;">
-    Dive deeper into our review findings with our 
-    <a href="#interactive-resources"><strong>interactive resources</strong></a>.
-  </p>
-</div>
-
+> [!IMPORTANT]
+> 🚀 **Check out our [interactive resources](#interactive-resources)!**
 
 <!--- (COMMENTATO)
 If you find this project interesting, please refer to our paper and cite it in your work:
