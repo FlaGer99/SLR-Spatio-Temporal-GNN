@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Viewer & Plotter</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .controls h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 6px 8px;
+            font-size: 14px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 650;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+
+        th:hover {
+            background-color: #2980b9;
+        }
+
+        th.sortable::after {
+            content: ' ↕';
+            opacity: 0.5;
+        }
+
+        th.sorted-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+
+        th.sorted-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Centra tutte le colonne tranne la prima */
+        td:not(:first-child), th:not(:first-child) {
+            text-align: center;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px;
+            font-style: italic;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            min-height: 400px;
+            margin-top: 20px;
+        }
+
+        /* Bold styling for min/max values */
+        .min-value {
+            font-weight: bold;
+            text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 2px;
+            color: #00c74c;
+        }
+
+        .max-value {
+            font-weight: bold;
+            text-decoration: underline;
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 2px;
+            color: #00c74c;
+        }
+
+        /* Dataset info styling */
+        .dataset-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            font-size: 14px;
+            color: #666;
+            border-radius: 0 5px 5px 0;
+            flex-wrap: nowrap;
+        }
+
+        .dataset-name {
+            font-style: italic; /* only the dataset name is italic */
+        }
+
+        .dataset-text {
+            display: inline-block;
+            font-style: normal;
+            font-weight: 500;
+        }
+        
+        #tableDisplay {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .control-group {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin-bottom: 0.2em;">📊 Table Viewer & Plotter</h1>
+            <p>Interact with tables of the paper "A Systematic Literature Review of Spatio-Temporal Graph Neural Network
+                Models for Time Series Forecasting and Classification"</p>
+        </div>
+
+        <div class="controls">
+            <h3>🎛️ Selection Controls</h3>
+            <div class="control-group">
+                <div>
+                    <label for="categorySelect">Select Table Number:</label>
+                    <select id="categorySelect" onchange="selectCategory()">
+                        <option value="">-- Select a table --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="tableSelect">Select Additional Details:</label>
+                    <select id="tableSelect" onchange="selectTable()" disabled>
+                        <option value="">-- First select a table --</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="columnSelect">Select Metric for Chart:</label>
+                    <select id="columnSelect" onchange="selectColumn()" disabled>
+                        <option value="">-- First select a table --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="datasetInfo" class="dataset-info" style="display: none;">
+                <span class="dataset-text" id="datasetInfoContent"></span>
+            </div>
+
+        </div>
+
+        <div class="table-container">
+            <h3>📋 Selected Table</h3>
+            <div id="tableDisplay">
+                <div class="placeholder">
+                    Select a table from the dropdown menu above to display it here
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>📊 Selected Metric</h3>
+            <div id="chartDisplay">
+                <div class="placeholder">
+                    Select a table and a metric to generate the chart
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // HERE YOU CAN INSERT YOUR LATEX TABLES
+        const latexTables = [
+            {
+                name: "table12_6h",
+                title: "Table 12 – 6h horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 1.658 & 2.100 \\\\DAGLN & 1.068 & 1.423 \\\\DASTGN & 1.039 & 1.384 \\\\DLinear & 1.145 & 1.528 \\\\EMD-SVRCKH & 1.111 & 1.489 \\\\GraphWaveNet & 1.101 & 1.467 \\\\Historical Inertia & 1.139 & 1.494 \\\\MTGNN & 1.091 & 1.454 \\\\Multi LSTMs & 1.312 & 1.663 \\\\PDCNN & 2.025 & 2.561 \\\\SGNN & 2.542 & 3.222 \\\\STGN & 1.084 & 1.430 \\\\TPA-LSTM & 1.203 & 1.562 \\\\Wavelet-DBN-RF & 1.451 & 1.855 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_12h",
+                title: "Table 12 – 12h horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 1.795 & 2.277 \\\\DAGLN & 1.219 & 1.625 \\\\DASTGN & 1.184 & 1.572 \\\\DLinear & 1.306 & 1.745 \\\\EMD-SVRCKH & 1.311 & 1.755 \\\\GraphWaveNet & 1.265 & 1.685 \\\\Historical Inertia & 1.301 & 1.704 \\\\MTGNN & 1.237 & 1.650 \\\\Multi LSTMs & 1.645 & 2.079 \\\\PDCNN & 2.026 & 2.562 \\\\SGNN & 2.562 & 3.246 \\\\STGN & 1.281 & 1.697 \\\\TPA-LSTM & 1.552 & 1.997 \\\\Wavelet-DBN-RF & 1.597 & 2.038 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_18h",
+                title: "Table 12 – 18h horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 1.937 & 2.461 \\\\DAGLN & 1.346 & 1.793 \\\\DASTGN & 1.297 & 1.721 \\\\DLinear & 1.432 & 1.913 \\\\EMD-SVRCKH & 1.432 & 1.909 \\\\GraphWaveNet & 1.386 & 1.852 \\\\Historical Inertia & 1.405 & 1.843 \\\\MTGNN & 1.351 & 1.801 \\\\Multi LSTMs & 1.914 & 2.415 \\\\PDCNN & 2.385 & 3.033 \\\\SGNN & 2.573 & 3.264 \\\\STGN & 1.407 & 1.863 \\\\TPA-LSTM & 1.803 & 2.319 \\\\Wavelet-DBN-RF & 1.749 & 2.226 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_1d",
+                title: "Table 12 – 1d horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 2.038 & 2.594 \\\\DAGLN & 1.443 & 1.917 \\\\DASTGN & 1.387 & 1.829 \\\\DLinear & 1.528 & 2.037 \\\\EMD-SVRCKH & 1.526 & 2.027 \\\\GraphWaveNet & 1.487 & 1.982 \\\\Historical Inertia & 1.511 & 1.977 \\\\MTGNN & 1.454 & 1.936 \\\\Multi LSTMs & 2.129 & 2.679 \\\\PDCNN & 2.551 & 3.243 \\\\SGNN & 2.578 & 3.270 \\\\STGN & 1.523 & 2.013 \\\\TPA-LSTM & 1.984 & 2.544 \\\\Wavelet-DBN-RF & 1.836 & 2.328 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_2d",
+                title: "Table 12 – 2d horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 2.290 & 2.911 \\\\DAGLN & 1.716 & 2.255 \\\\DASTGN & 1.662 & 2.170 \\\\DLinear & 1.798 & 2.366 \\\\EMD-SVRCKH & 1.788 & 2.344 \\\\GraphWaveNet & 1.762 & 2.304 \\\\Historical Inertia & 1.773 & 2.304 \\\\MTGNN & 1.724 & 2.267 \\\\Multi LSTMs & 2.610 & 3.257 \\\\PDCNN & 2.959 & 3.750 \\\\SGNN & 2.583 & 3.275 \\\\STGN & 1.809 & 2.358 \\\\TPA-LSTM & 2.432 & 3.082 \\\\Wavelet-DBN-RF & 2.087 & 2.617 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_3d",
+                title: "Table 12 – 3d horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 2.401 & 3.042 \\\\DAGLN & 1.852 & 2.428 \\\\DASTGN & 1.806 & 2.338 \\\\DLinear & 1.937 & 2.512 \\\\EMD-SVRCKH & 1.919 & 2.495 \\\\GraphWaveNet & 1.901 & 2.466 \\\\Historical Inertia & 1.912 & 2.467 \\\\MTGNN & 1.864 & 2.436 \\\\Multi LSTMs & 2.748 & 3.420 \\\\PDCNN & 3.011 & 3.824 \\\\SGNN & 2.618 & 3.328 \\\\STGN & 1.942 & 2.514 \\\\TPA-LSTM & 2.667 & 3.383 \\\\Wavelet-DBN-RF & 2.162 & 2.703 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_4d",
+                title: "Table 12 – 4d horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 2.478 & 3.141 \\\\DAGLN & 1.935 & 2.512 \\\\DASTGN & 1.900 & 2.449 \\\\DLinear & 2.022 & 2.604 \\\\EMD-SVRCKH & 1.998 & 2.587 \\\\GraphWaveNet & 1.951 & 2.554 \\\\Historical Inertia & 2.007 & 2.571 \\\\MTGNN & 1.935 & 2.515 \\\\Multi LSTMs & 2.793 & 3.477 \\\\PDCNN & 3.012 & 3.833 \\\\SGNN & 2.666 & 3.392 \\\\STGN & 2.046 & 2.631 \\\\TPA-LSTM & 2.836 & 3.598 \\\\Wavelet-DBN-RF & 2.200 & 2.744 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_5d",
+                title: "Table 12 – 5d horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 2.525 & 3.198 \\\\DAGLN & 1.984 & 2.570 \\\\DASTGN & 1.945 & 2.498 \\\\DLinear & 2.080 & 2.666 \\\\EMD-SVRCKH & 2.051 & 2.650 \\\\GraphWaveNet & 1.992 & 2.582 \\\\Historical Inertia & 2.081 & 2.637 \\\\MTGNN & 1.990 & 2.579 \\\\Multi LSTMs & 2.818 & 3.510 \\\\PDCNN & 2.971 & 3.789 \\\\SGNN & 2.695 & 3.431 \\\\STGN & 2.073 & 2.649 \\\\TPA-LSTM & 2.959 & 3.745 \\\\Wavelet-DBN-RF & 2.217 & 2.766 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_6d",
+                title: "Table 12 – 6d horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 2.556 & 3.245 \\\\DAGLN & 2.019 & 2.607 \\\\DASTGN & 1.995 & 2.554 \\\\DLinear & 2.124 & 2.713 \\\\EMD-SVRCKH & 2.090 & 2.695 \\\\GraphWaveNet & 2.089 & 2.684 \\\\Historical Inertia & 2.109 & 2.678 \\\\MTGNN & 2.036 & 2.632 \\\\Multi LSTMs & 2.842 & 3.540 \\\\PDCNN & 2.918 & 3.727 \\\\SGNN & 2.712 & 3.453 \\\\STGN & 2.137 & 2.717 \\\\TPA-LSTM & 3.027 & 3.825 \\\\Wavelet-DBN-RF & 2.232 & 2.788 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table12_7d",
+                title: "Table 12 – 7d horizon",
+                dataset: "CCMP wind speed",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineCGRU & 2.594 & 3.285 \\\\DAGLN & 2.067 & 2.656 \\\\DASTGN & 2.028 & 2.600 \\\\DLinear & 2.155 & 2.748 \\\\EMD-SVRCKH & 2.119 & 2.730 \\\\GraphWaveNet & 2.124 & 2.717 \\\\Historical Inertia & 2.114 & 2.687 \\\\MTGNN & 2.059 & 2.657 \\\\Multi LSTMs & 2.867 & 3.573 \\\\PDCNN & 2.877 & 3.675 \\\\SGNN & 2.716 & 3.458 \\\\STGN & 2.189 & 2.771 \\\\TPA-LSTM & 3.045 & 3.842 \\\\Wavelet-DBN-RF & 2.243 & 2.798 \\\\\\hline\\end{tabular}"
+            },
+
+            {
+                name: "table13_1h",
+                title: "Table 13 – 1h horizon",
+                dataset: "Chinese AQI",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineAirFormer & 5.95 & 11.49 \\\\FGA & 5.87 & 11.36 \\\\GAGNN & 5.56 & 10.81 \\\\GC-LSTM & 5.95 & 11.91 \\\\GWNet & 5.76 & 11.27 \\\\HGCN & 5.70 & 11.18 \\\\HighAir & 5.50 & 10.80 \\\\INNGNN & 5.48 & 10.70 \\\\LSTM & 6.50 & 13.85 \\\\MegaCRN & 5.38 & 10.64 \\\\SHARE & 5.84 & 11.27 \\\\XGBoost & 6.85 & 14.25 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table13_2h",
+                title: "Table 13 – 2h horizon",
+                dataset: "Chinese AQI",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineAirFormer & 9.31 & 17.23 \\\\FGA & 9.14 & 17.01 \\\\GAGNN & 8.59 & 16.17 \\\\GC-LSTM & 9.16 & 16.98 \\\\GWNet & 9.64 & 17.57 \\\\HGCN & 9.09 & 17.09 \\\\HighAir & 8.52 & 16.10 \\\\INNGNN & 8.49 & 16.03 \\\\LSTM & 10.26 & 19.26 \\\\MegaCRN & 8.76 & 16.46 \\\\SHARE & 9.07 & 16.84 \\\\XGBoost & 10.89 & 19.80 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table13_3h",
+                title: "Table 13 – 3h horizon",
+                dataset: "Chinese AQI",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineAirFormer & 11.87 & 21.32 \\\\FGA & 11.71 & 21.05 \\\\GAGNN & 10.80 & 19.84 \\\\GC-LSTM & 11.58 & 20.82 \\\\GWNet & 12.79 & 22.31 \\\\HGCN & 11.73 & 21.33 \\\\HighAir & 10.81 & 19.85 \\\\INNGNN & 10.67 & 19.66 \\\\LSTM & 13.18 & 23.52 \\\\MegaCRN & 10.80 & 19.92 \\\\SHARE & 11.49 & 20.77 \\\\XGBoost & 13.99 & 24.72 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table13_4h",
+                title: "Table 13 – 4h horizon",
+                dataset: "Chinese AQI",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineAirFormer & 13.87 & 24.31 \\\\FGA & 13.75 & 24.09 \\\\GAGNN & 12.52 & 22.51 \\\\GC-LSTM & 13.46 & 23.69 \\\\GWNet & 15.30 & 25.75 \\\\HGCN & 13.84 & 24.52 \\\\HighAir & 12.50 & 22.70 \\\\INNGNN & 12.34 & 22.29 \\\\LSTM & 15.52 & 26.83 \\\\MegaCRN & 12.73 & 22.82 \\\\SHARE & 13.35 & 23.60 \\\\XGBoost & 16.27 & 28.14 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table13_5h",
+                title: "Table 13 – 5h horizon",
+                dataset: "Chinese AQI",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineAirFormer & 15.52 & 26.72 \\\\FGA & 15.42 & 26.55 \\\\GAGNN & 13.91 & 24.63 \\\\GC-LSTM & 15.00 & 25.97 \\\\GWNet & 17.28 & 28.52 \\\\HGCN & 15.55 & 26.99 \\\\HighAir & 14.00 & 24.91 \\\\INNGNN & 13.72 & 24.37 \\\\LSTM & 17.40 & 29.46 \\\\MegaCRN & 14.46 & 25.45 \\\\SHARE & 14.74 & 25.80 \\\\XGBoost & 18.14 & 30.63 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table13_6h",
+                title: "Table 13 – 6h horizon",
+                dataset: "Chinese AQI",
+                latexSource: "\\begin{tabular}{|l|c|c|}\\hlineModel & MAE & RMSE \\\\\\hlineAirFormer & 16.95 & 28.71 \\\\FGA & 16.80 & 28.52 \\\\GAGNN & 15.10 & 26.37 \\\\GC-LSTM & 16.31 & 27.82 \\\\GWNet & 18.81 & 30.48 \\\\HGCN & 16.95 & 28.94 \\\\HighAir & 15.09 & 26.40 \\\\INNGNN & 14.91 & 26.11 \\\\LSTM & 18.91 & 31.55 \\\\MegaCRN & 16.03 & 27.60 \\\\SHARE & 15.79 & 27.38 \\\\XGBoost & 19.56 & 33.44 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table16",
+                title: "Table 16",
+                dataset: "A-share market",
+                latexSource: `\\begin{tabular}{|l|c|c|c|c|}
+                \\hline
+                Model & Accuracy & Precision & Recall & F1 score \\\\
+                \\hline
+                DARNN & 38.41 & 37.99 & 39.24 & 38.60 \\\\
+                GCN+LSTM & 37.30 & 39.28 & 34.16 & 36.54 \\\\
+                HATS & 38.85 & 38.70 & 35.06 & 36.78 \\\\
+                HGTAN & 40.02 & 41.77 & 39.03 & 40.32 \\\\
+                KG-GCN & 51.38 & 65.72 & 31.45 & 39.27 \\\\
+                LSTM & 35.03 & 36.43 & 34.23 & 35.20 \\\\
+                MOM & 35.73 & 35.19 & 32.82 & 33.96 \\\\
+                MONEY & 39.90 & 43.92 & 40.61 & 42.20 \\\\
+                MR & 35.32 & 38.03 & 33.60 & 35.68 \\\\
+                SFM & 34.54 & 26.93 & 33.32 & 29.49 \\\\
+                STHGCN & 38.45 & 37.22 & 32.82 & 34.87 \\\\
+                TGC & 37.81 & 36.96 & 34.49 & 35.67 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table23_15min",
+                title: "Table 23 – 15min horizon",
+                dataset: "METR-LA",
+                latexSource: "\\begin{tabular}{|l|c|c|c|}\\hlineModel & MAE & MAPE & RMSE \\\\\\hlineAGCRN & 2.87 & 7.70 & 5.58 \\\\AGP-GNN & 2.71 & 7.21 & 5.25 \\\\AMGCN & 2.52 & 6.13 & 4.48 \\\\ARIMA & 3.99 & 9.60 & 8.12 \\\\ASTGCN & 4.86 & 9.21 & 9.27 \\\\ASTGNN & 2.66 & 6.96 & 5.09 \\\\AutoSTG & 2.70 & - & 5.16 \\\\AutoSTS & 2.57 & 6.55 & 4.93 \\\\CASTGNN & 2.88 & 6.67 & 6.44 \\\\D<sup>2</sup>STGNN & 2.56 & 6.48 & 4.88 \\\\DCRNN & 2.77 & 7.30 & 5.38 \\\\DetectorNet & - & - & - \\\\DGCRN & 2.62 & 6.63 & 5.01 \\\\DMSTGCN & 2.85 & 7.54 & 5.54 \\\\DST-GCNN & 2.68 & 7.20 & 5.35 \\\\DualGraph & 2.62 & 7.10 & 5.36 \\\\DyGCN-LSTM & 2.64 & 6.35 & 4.64 \\\\DyHSL & 2.58 & 6.47 & 4.98 \\\\FC-GAGA & 2.75 & 7.25 & 5.34 \\\\FNN & 3.99 & 9.90 & 7.94 \\\\GA-LSTM & 2.30 & 7.01 & 4.97 \\\\GaAN & 2.71 & 6.99 & 5.24 \\\\GGRU & 2.71 & 6.99 & 5.24 \\\\GL-STGTN & 2.61 & 6.94 & 5.08 \\\\GMAN & 2.77 & 7.25 & 5.48 \\\\GTS & 2.64 & 6.80 & 4.95 \\\\GWN & 2.69 & 6.90 & 5.15 \\\\HA & 4.16 & 13.00 & 7.80 \\\\HighResNet & 2.68 & 6.88 & 5.10 \\\\LSTM & 3.44 & 9.60 & 6.30 \\\\MCFGNN & 2.31 & 5.86 & 5.29 \\\\MRA-BGCN & 2.67 & 6.80 & 5.12 \\\\MTGNN & 2.69 & 6.86 & 5.18 \\\\MTGODE & 2.66 & 6.87 & 5.10 \\\\MVST-GNN & 2.70 & 5.19 & 6.97 \\\\PAHNN & 2.51 & 6.34 & 4.82 \\\\PDFormer & 2.83 & 7.77 & 5.45 \\\\PGCN & 2.70 & 6.98 & 5.16 \\\\SAGDFN & 2.56 & 6.50 & 5.00 \\\\SDGCN & 2.76 & 7.16 & 5.38 \\\\SLCNN & 2.53 & 6.70 & 5.18 \\\\SNAS4MTF & 2.68 & 6.90 & 5.16 \\\\STAG-GCN & 2.67 & 7.00 & 5.23 \\\\STAEFormer & 2.65 & 6.85 & 5.11 \\\\STEP & 2.61 & 6.60 & 4.98 \\\\STID & 2.82 & 7.75 & 5.53 \\\\STFGNN & 2.57 & 6.51 & 4.73 \\\\STGCN & 2.88 & 7.62 & 5.74 \\\\STGODE & 3.47 & 8.76 & 6.76 \\\\STG-NCDE & 3.77 & 8.54 & 9.47 \\\\STGRAT & 2.60 & 6.61 & 5.07 \\\\ST-MetaNet & 2.69 & 6.91 & 5.17 \\\\STSD & 2.60 & 6.55 & 4.96 \\\\STSGCN & 3.31 & 8.06 & 7.62 \\\\SVR & 3.99 & 9.30 & 8.45 \\\\TF-GAN & 2.63 & 6.55 & 4.94 \\\\T-GCN & 3.03 & 7.81 & 5.26 \\\\TGC-GRU & 5.25 & 12.45 & 8.56 \\\\VAR & 4.42 & 10.20 & 7.89 \\\\TimesNet & 2.78 & 7.52 & 5.49 \\\\TwoResNet & 2.65 & 6.78 & 5.08 \\\\WaveNet & 2.99 & 8.04 & 5.89 \\\\Z-GCNETs & 3.23 & 7.87 & 7.48 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table23_30min",
+                title: "Table 23 – 30min horizon",
+                dataset: "METR-LA",
+                latexSource: "\\begin{tabular}{|l|c|c|c|}\\hlineModel & MAE & MAPE & RMSE \\\\\\hlineAGCRN & 3.23 & 9.00 & 6.58 \\\\AGP-GNN & 3.04 & 8.15 & 6.20 \\\\AMGCN & 2.97 & 7.70 & 5.35 \\\\ARIMA & 5.15 & 12.70 & 10.45 \\\\ASTGCN & 5.43 & 10.13 & 10.61 \\\\ASTGNN & 3.06 & 8.47 & 6.26 \\\\AutoSTG & 3.06 & - & 6.17 \\\\AutoSTS & 2.89 & 7.85 & 5.87 \\\\CASTGNN & 3.25 & 7.91 & 7.56 \\\\D<sup>2</sup>STGNN & 2.90 & 7.78 & 5.89 \\\\DCRNN & 3.15 & 8.80 & 6.45 \\\\DetectorNet & 3.06 & 8.12 & 6.08 \\\\DGCRN & 2.99 & 8.02 & 6.05 \\\\DMSTGCN & 3.26 & 9.19 & 6.56 \\\\DST-GCNN & 3.01 & 8.50 & 6.23 \\\\DualGraph & 2.83 & 7.90 & 5.89 \\\\DyGCN-LSTM & 3.24 & 8.04 & 5.24 \\\\DyHSL & 2.95 & 8.05 & 6.13 \\\\FC-GAGA & 3.10 & 8.57 & 6.30 \\\\FNN & 4.23 & 12.90 & 8.17 \\\\GA-LSTM & 2.98 & 8.50 & 6.00 \\\\GaAN & 3.12 & 8.56 & 6.36 \\\\GGRU & 3.12 & 8.56 & 6.36 \\\\GL-STGTN & 2.96 & 8.23 & 5.97 \\\\GMAN & 3.07 & 8.35 & 6.34 \\\\GTS & 3.01 & 8.20 & 5.85 \\\\GWN & 3.07 & 8.37 & 6.22 \\\\HA & 4.16 & 13.00 & 7.80 \\\\HighResNet & 3.03 & 8.34 & 6.11 \\\\LSTM & 3.77 & 10.90 & 7.23 \\\\MCFGNN & 2.66 & 6.89 & 6.27 \\\\MRA-BGCN & 3.06 & 8.30 & 6.17 \\\\MTGNN & 3.05 & 8.19 & 6.17 \\\\MTGODE & 3.00 & 8.19 & 6.05 \\\\MVST-GNN & 3.06 & 8.12 & 6.08 \\\\PAHNN & 2.87 & 7.63 & 5.73 \\\\PDFormer & 3.20 & 9.19 & 6.46 \\\\PGCN & 3.08 & 8.38 & 6.22 \\\\SAGDFN & 2.94 & 7.90 & 6.05 \\\\SDGCN & 3.15 & 8.53 & 6.46 \\\\SLCNN & 2.88 & 8.00 & 6.15 \\\\SNAS4MTF & 3.03 & 8.25 & 6.12 \\\\STAG-GCN & 3.07 & 8.26 & 6.15 \\\\STAEFormer & 2.97 & 8.13 & 6.00 \\\\STEP & 2.96 & 7.96 & 5.97 \\\\STID & 3.19 & 9.39 & 6.57 \\\\STFGNN & 2.83 & 7.46 & 5.46 \\\\STGCN & 3.47 & 9.57 & 7.24 \\\\STGODE & 4.36 & 11.14 & 8.47 \\\\STG-NCDE & 4.84 & 10.63 & 12.04 \\\\STGRAT & 3.01 & 8.15 & 6.21 \\\\ST-MetaNet & 3.10 & 8.57 & 6.28 \\\\STSD & 2.96 & 7.93 & 5.98 \\\\STSGCN & 4.13 & 10.29 & 9.77 \\\\SVR & 5.05 & 12.10 & 10.87 \\\\TF-GAN & 3.06 & 8.36 & 6.20 \\\\T-GCN & 3.52 & 9.45 & 6.12 \\\\TGC-GRU & 5.99 & 14.18 & 10.37 \\\\VAR & 5.41 & 12.70 & 9.13 \\\\TimesNet & 3.36 & 9.43 & 6.41 \\\\TwoResNet & 3.01 & 8.14 & 6.07 \\\\WaveNet & 3.59 & 10.25 & 7.28 \\\\Z-GCNETs & 3.93 & 9.75 & 9.40 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table23_60min",
+                title: "Table 23 – 60min horizon",
+                dataset: "METR-LA",
+                latexSource: "\\begin{tabular}{|l|c|c|c|}\\hlineModel & MAE & MAPE & RMSE \\\\\\hlineAGCRN & 3.62 & 10.38 & 7.51 \\\\AGP-GNN & 3.41 & 9.70 & 7.20 \\\\AMGCN & 3.38 & 8.93 & 6.21 \\\\ARIMA & 6.90 & 17.40 & 13.23 \\\\ASTGCN & 6.51 & 11.64 & 12.52 \\\\ASTGNN & 3.52 & 9.56 & 7.21 \\\\AutoSTG & 3.47 & - & 7.27 \\\\AutoSTS & 3.28 & 9.43 & 6.86 \\\\CASTGNN & 3.70 & 9.76 & 8.92 \\\\D<sup>2</sup>STGNN & 3.35 & 9.40 & 7.03 \\\\DCRNN & 3.60 & 10.50 & 7.60 \\\\DetectorNet & 3.40 & 9.60 & 6.98 \\\\DGCRN & 3.44 & 9.73 & 7.19 \\\\DMSTGCN & 3.72 & 10.96 & 7.55 \\\\DST-GCNN & 3.41 & 10.30 & 7.47 \\\\DualGraph & 3.15 & 9.10 & 6.67 \\\\DyGCN-LSTM & 3.53 & 9.30 & 6.53 \\\\DyHSL & 3.41 & 9.41 & 7.03 \\\\FC-GAGA & 3.51 & 10.14 & 7.31 \\\\FNN & 4.49 & 14.00 & 8.69 \\\\GA-LSTM & 3.55 & 9.97 & 7.23 \\\\GaAN & 3.64 & 10.62 & 7.65 \\\\GGRU & 3.64 & 10.62 & 7.65 \\\\GL-STGTN & 3.37 & 9.81 & 6.99 \\\\GMAN & 3.40 & 9.72 & 7.22 \\\\GTS & 3.41 & 9.90 & 6.74 \\\\GWN & 3.53 & 10.01 & 7.37 \\\\HA & 4.16 & 13.00 & 7.80 \\\\HighResNet & 3.47 & 10.24 & 7.27 \\\\LSTM & 4.37 & 13.20 & 8.69 \\\\MCFGNN & 3.05 & 7.65 & 7.20 \\\\MRA-BGCN & 3.49 & 10.00 & 7.30 \\\\MTGNN & 3.49 & 9.87 & 7.23 \\\\MTGODE & 3.39 & 9.80 & 7.05 \\\\MVST-GNN & 3.40 & 9.60 & 6.98 \\\\PAHNN & 3.25 & 9.32 & 6.67 \\\\PDFormer & 3.62 & 10.91 & 7.47 \\\\PGCN & 3.54 & 9.94 & 7.36 \\\\SAGDFN & 3.37 & 9.50 & 7.17 \\\\SDGCN & 3.61 & 9.87 & 7.43 \\\\SLCNN & 3.30 & 9.70 & 7.20 \\\\SNAS4MTF & 3.43 & 9.82 & 7.15 \\\\STAG-GCN & 3.50 & 9.93 & 7.24 \\\\STAEFormer & 3.34 & 9.70 & 7.02 \\\\STEP & 3.37 & 9.61 & 6.99 \\\\STID & 3.55 & 10.95 & 7.55 \\\\STFGNN & 3.18 & 8.81 & 6.40 \\\\STGCN & 4.59 & 12.70 & 9.40 \\\\STGODE & 5.50 & 14.32 & 10.33 \\\\STG-NCDE & 6.35 & 13.49 & 14.94 \\\\STGRAT & 3.49 & 10.01 & 7.42 \\\\ST-MetaNet & 3.59 & 10.63 & 7.52 \\\\STSD & 3.37 & 9.51 & 7.03 \\\\STSGCN & 5.06 & 12.91 & 11.66 \\\\SVR & 6.72 & 16.70 & 13.76 \\\\TF-GAN & 3.32 & 9.48 & 7.11 \\\\T-GCN & 4.30 & 11.80 & 7.31 \\\\TGC-GRU & 7.32 & 17.11 & 13.47 \\\\VAR & 6.52 & 15.80 & 10.11 \\\\TimesNet & 4.52 & 11.37 & 9.66 \\\\TwoResNet & 3.39 & 9.71 & 7.08 \\\\WaveNet & 4.45 & 13.62 & 8.93 \\\\Z-GCNETs & 4.83 & 12.04 & 11.57 \\\\\\hline\\end{tabular}"
+            },
+            {
+                name: "table24_15min",
+                title: "Table 24 – 15min horizon",
+                dataset: "PEMS-BAY",
+                latexSource: "\\begin{tabular}{|l|c|c|c|}\\hline Model & MAE & MAPE & RMSE \\\\ \\hline AGCRN & 1.37 & 2.94 & 2.87 \\\\ AGP-GNN & 1.33 & 2.79 & 2.86 \\\\ AMGCN & 1.22 & 2.63 & 2.34 \\\\ ARIMA & 1.62 & 3.50 & 3.30 \\\\ ASTGCN & 1.52 & 3.22 & 3.13 \\\\ ASTGNN & 1.34 & 3.84 & 2.75 \\\\ AutoSTG & 1.33 & 2.79 & 2.78 \\\\ AutoSTS & 1.28 & 2.66 & 2.63 \\\\ D<sup>2</sup>STGNN & 1.24 & 2.58 & 2.60 \\\\ DCRNN & 1.38 & 2.90 & 2.95 \\\\ DetectorNet & - & - & - \\\\ DGCRN & 1.28 & 2.66 & 2.69 \\\\ DMSTG & - & - & - \\\\ DMSTGCN & 1.33 & 2.80 & 2.83 \\\\ DSTCGCN & - & - & - \\\\ DyHSL & 1.30 & 2.73 & 2.71 \\\\ FC-GAGA & 1.36 & 2.87 & 2.86 \\\\ FNN & 2.20 & 5.19 & 4.42 \\\\ GL-STGTN & 1.26 & 2.79 & 2.73 \\\\ GMAN & 1.34 & 2.81 & 2.82 \\\\ GSLNN & 1.29 & 2.71 & 2.66 \\\\ GTS & 1.32 & 2.80 & 2.62 \\\\ GWN & 1.30 & 2.73 & 2.74 \\\\ Informer & 2.30 & 5.02 & 4.21 \\\\ LDS & 1.33 & 2.80 & 2.81 \\\\ HA & 1.89 & 4.16 & 4.30 \\\\ LSTM & 2.05 & 4.80 & 4.19 \\\\ LSVR & 1.85 & 3.80 & 3.59 \\\\ HighResNet & 1.31 & 2.74 & 2.75 \\\\ MegaCRN & 1.28 & 2.67 & 2.72 \\\\ MRA-BGCN & 1.29 & 2.90 & 2.72 \\\\ MTGNN & 1.32 & 2.77 & 2.79 \\\\ MTGODE & 1.29 & 2.72 & 2.73 \\\\ MVST-GNN & 1.30 & 2.73 & 2.74 \\\\ PAHNN & 1.27 & 2.60 & 2.65 \\\\ PDFormer & 1.32 & 2.78 & 2.83 \\\\ PGCN & 1.30 & 2.72 & 2.73 \\\\ RGSL & - & - & - \\\\ RST-LTG & - & - & - \\\\ SDGCN & 1.35 & 2.89 & 2.88 \\\\ SLCNN & 1.44 & 3.00 & 2.90 \\\\ SNAS4MTF & 1.30 & 2.72 & 2.77 \\\\ STAEFormer & 1.31 & 2.76 & 2.78 \\\\ StemGNN & 1.44 & 3.08 & 3.12 \\\\ STEP & 1.26 & 2.59 & 2.73 \\\\ STID & 1.30 & 2.73 & 2.81 \\\\ STFGNN & 1.42 & 2.92 & 2.97 \\\\ STGCN & 1.36 & 2.90 & 2.96 \\\\ STG-NCDE & 1.38 & 2.91 & 2.93 \\\\ STGODE & 1.43 & 2.99 & 2.88 \\\\ STGRAT & 1.29 & 2.67 & 2.71 \\\\ ST-MetaNet & 1.36 & 2.82 & 2.90 \\\\ ST-Norm & 1.34 & 2.82 & 2.88 \\\\ STSD & 1.28 & 2.64 & 2.69 \\\\ STSGCN & 1.44 & 3.04 & 3.01 \\\\ SVR & 1.85 & 3.80 & 3.59 \\\\ TD2MG2NN & 1.25 & 2.62 & 2.64 \\\\ TGC-GRU & 2.34 & 5.08 & 4.30 \\\\ T-GCN & 1.50 & 3.14 & 2.83 \\\\ TimesNet & 1.32 & 2.94 & 2.72 \\\\ TPGNN & 1.26 & 2.56 & 2.64 \\\\ TwoResNet & 1.30 & 2.70 & 2.73 \\\\ VAR & 1.74 & 3.60 & 3.16 \\\\ WaveNet & 1.39 & 2.91 & 3.01 \\\\ Z-GCNETs & 1.36 & 2.88 & 2.86 \\\\ \\hline \\end{tabular}"
+            },
+            {
+                name: "table24_30min",
+                title: "Table 24 – 30min horizon",
+                dataset: "PEMS-BAY",
+                latexSource: "\\begin{tabular}{|l|c|c|c|}\\hline Model & MAE & MAPE & RMSE \\\\ \\hline AGCRN & 1.69 & 3.87 & 3.85 \\\\ AGP-GNN & 1.61 & 3.66 & 3.67 \\\\ AMGCN & 1.53 & 3.55 & 3.13 \\\\ ARIMA & 2.33 & 5.40 & 4.76 \\\\ ASTGCN & 2.01 & 4.48 & 4.27 \\\\ ASTGNN & 1.65 & 3.72 & 3.74 \\\\ AutoSTG & 1.63 & 3.66 & 3.62 \\\\ AutoSTS & 1.57 & 3.54 & 3.50 \\\\ D<sup>2</sup>STGNN & 1.55 & 3.49 & 3.52 \\\\ DCRNN & 1.74 & 3.90 & 3.97 \\\\ DetectorNet & 1.57 & 3.56 & 3.54 \\\\ DGCRN & 1.59 & 3.55 & 3.63 \\\\ DMSTG & - & - & - \\\\ DMSTGCN & 1.67 & 3.81 & 3.79 \\\\ DSTCGCN & - & - & - \\\\ DyHSL & 1.60 & 3.57 & 3.67 \\\\ FC-GAGA & 1.68 & 3.80 & 3.80 \\\\ FNN & 2.30 & 5.43 & 4.63 \\\\ GL-STGTN & 1.55 & 3.63 & 3.58 \\\\ GMAN & 1.62 & 3.62 & 3.72 \\\\ GSLNN & 1.64 & 3.67 & 3.74 \\\\ GTS & 1.64 & 3.60 & 3.41 \\\\ GWN & 1.63 & 3.67 & 3.70 \\\\ Informer & 2.40 & 5.32 & 4.49 \\\\ LDS & 1.67 & 3.80 & 3.80 \\\\ HA & 2.50 & 5.62 & 5.82 \\\\ LSTM & 2.20 & 5.20 & 4.55 \\\\ LSVR & 2.48 & 5.50 & 5.18 \\\\ HighResNet & 1.64 & 3.68 & 3.75 \\\\ MegaCRN & 1.60 & 3.57 & 3.68 \\\\ MRA-BGCN & 1.61 & 3.80 & 3.67 \\\\ MTGNN & 1.65 & 3.69 & 3.74 \\\\ MTGODE & 1.61 & 3.61 & 3.66 \\\\ MVST-GNN & 1.57 & 3.56 & 3.54 \\\\ PAHNN & 1.52 & 3.48 & 3.54 \\\\ PDFormer & 1.64 & 3.71 & 3.79 \\\\ PGCN & 1.62 & 3.63 & 3.67 \\\\ RGSL & - & - & - \\\\ RST-LTG & - & - & - \\\\ SDGCN & 1.69 & 3.87 & 3.91 \\\\ SLCNN & 1.72 & 3.90 & 3.81 \\\\ SNAS4MTF & 1.61 & 3.63 & 3.68 \\\\ STAEFormer & 1.62 & 3.62 & 3.68 \\\\ StemGNN & 1.93 & 4.54 & 4.38 \\\\ STEP & 1.55 & 3.43 & 3.58 \\\\ STID & 1.62 & 3.68 & 3.72 \\\\ STFGNN & 1.67 & 3.92 & 3.94 \\\\ STGCN & 1.81 & 4.17 & 4.27 \\\\ STG-NCDE & 1.71 & 3.91 & 3.84 \\\\ STGODE & 1.84 & 3.84 & 3.90 \\\\ STGRAT & 1.61 & 3.63 & 3.69 \\\\ ST-MetaNet & 1.76 & 4.00 & 4.02 \\\\ ST-Norm & 1.67 & 3.75 & 3.83 \\\\ STSD & 1.60 & 3.54 & 3.63 \\\\ STSGCN & 1.83 & 4.17 & 4.18 \\\\ SVR & 2.48 & 5.50 & 5.18 \\\\ TD2MG2NN & 1.55 & 3.47 & 3.50 \\\\ TGC-GRU & 2.44 & 5.40 & 4.64 \\\\ T-GCN & 1.73 & 3.76 & 3.40 \\\\ TimesNet & 1.76 & 3.74 & 4.16 \\\\ TPGNN & 1.65 & 3.47 & 3.65 \\\\ TwoResNet & 1.61 & 3.59 & 3.69 \\\\ VAR & 2.32 & 5.00 & 4.25 \\\\ WaveNet & 1.83 & 4.16 & 4.21 \\\\ Z-GCNETs & 1.68 & 3.79 & 3.78 \\\\ \\hline \\end{tabular}"
+            },
+            {
+                name: "table24_60min",
+                title: "Table 24 – 60min horizon",
+                dataset: "PEMS-BAY",
+                latexSource: "\\begin{tabular}{|l|c|c|c|}\\hline Model & MAE & MAPE & RMSE \\\\ \\hline AGCRN & 1.96 & 4.64 & 4.54 \\\\ AGP-GNN & 1.86 & 4.30 & 4.34 \\\\ AMGCN & 1.93 & 4.66 & 3.95 \\\\ ARIMA & 3.38 & 8.30 & 6.50 \\\\ ASTGCN & 2.61 & 6.00 & 5.42 \\\\ ASTGNN & 1.94 & 4.59 & 4.51 \\\\ AutoSTG & 1.91 & 4.57 & 4.42 \\\\ AutoSTS & 1.83 & 4.41 & 4.27 \\\\ D<sup>2</sup>STGNN & 1.85 & 4.37 & 4.30 \\\\ DCRNN & 2.07 & 4.90 & 4.74 \\\\ DetectorNet & 1.80 & 4.19 & 4.26 \\\\ DGCRN & 1.89 & 4.43 & 4.42 \\\\ DMSTG & 1.91 & 4.51 & 4.43 \\\\ DMSTGCN & 1.99 & 4.78 & 4.54 \\\\ DSTCGCN & 1.95 & 4.66 & 4.51 \\\\ DyHSL & 1.95 & 4.62 & 4.53 \\\\ FC-GAGA & 1.97 & 4.67 & 4.52 \\\\ FNN & 2.46 & 5.89 & 4.98 \\\\ GL-STGTN & 1.80 & 4.38 & 4.30 \\\\ GMAN & 1.86 & 4.31 & 4.32 \\\\ GSLNN & 1.93 & 4.51 & 4.46 \\\\ GTS & 1.91 & 4.40 & 3.97 \\\\ GWN & 1.95 & 4.63 & 4.52 \\\\ Informer & 2.55 & 5.73 & 4.85 \\\\ LDS & 1.99 & 4.80 & 4.59 \\\\ HA & 3.31 & 7.65 & 7.54 \\\\ LSTM & 2.37 & 5.70 & 4.96 \\\\ LSVR & 3.28 & 8.00 & 7.08 \\\\ HighResNet & 1.95 & 4.61 & 4.56 \\\\ MegaCRN & 1.88 & 4.41 & 4.42 \\\\ MRA-BGCN & 1.91 & 4.60 & 4.46 \\\\ MTGNN & 1.94 & 4.53 & 4.49 \\\\ MTGODE & 1.88 & 4.39 & 4.31 \\\\ MVST-GNN & 1.80 & 4.19 & 4.26 \\\\ PAHNN & 1.83 & 4.35 & 4.27 \\\\ PDFormer & 1.91 & 4.51 & 4.43 \\\\ PGCN & 1.92 & 4.45 & 4.45 \\\\ RGSL & 2.03 & 4.77 & 4.64 \\\\ RST-LTG & 1.88 & 4.32 & 4.31 \\\\ SDGCN & 1.99 & 4.69 & 4.59 \\\\ SLCNN & 2.03 & 4.80 & 4.53 \\\\ SNAS4MTF & 1.89 & 4.44 & 4.36 \\\\ STAEFormer & 1.88 & 4.41 & 4.34 \\\\ StemGNN & 2.57 & 6.55 & 5.88 \\\\ STEP & 1.79 & 4.18 & 4.20 \\\\ STID & 1.89 & 4.47 & 4.40 \\\\ STFGNN & 1.98 & 4.83 & 4.74 \\\\ STGCN & 2.49 & 5.79 & 5.69 \\\\ STG-NCDE & 2.03 & 4.82 & 4.58 \\\\ STGODE & 2.30 & 4.61 & 4.89 \\\\ STGRAT & 1.95 & 4.64 & 4.54 \\\\ ST-MetaNet & 2.20 & 5.45 & 5.06 \\\\ ST-Norm & 1.96 & 4.62 & 4.52 \\\\ STSD & 1.88 & 4.35 & 4.36 \\\\ STSGCN & 2.26 & 5.40 & 5.21 \\\\ SVR & 3.28 & 8.00 & 7.08 \\\\ TD2MG2NN & 1.85 & 4.28 & 4.22 \\\\ TGC-GRU & 2.57 & 5.78 & 5.01 \\\\ T-GCN & 2.18 & 4.94 & 4.35 \\\\ TimesNet & 2.18 & 4.84 & 5.20 \\\\ TPGNN & 2.05 & 4.40 & 4.58 \\\\ TwoResNet & 1.89 & 4.40 & 4.41 \\\\ VAR & 2.93 & 6.50 & 5.44 \\\\ WaveNet & 2.35 & 5.87 & 5.43 \\\\ Z-GCNETs & 1.98 & 4.60 & 4.53 \\\\ \\hline \\end{tabular}"
+            },
+            {
+                name: "table25",
+                title: "Table 25",
+                dataset: "PeMS03",
+                latexSource: `\\begin{tabular}{|l|c|c|c|}
+                \\hline
+                Model & MAE & MAPE & RMSE \\\\
+                \\hline
+                AdaSTNet & 15.49 & 14.84 & 27.57 \\\\
+                AGCRN & 15.98 & 15.23 & 28.25 \\\\
+                ARIMA & 35.41 & 33.78 & 47.59 \\\\
+                ASTGCN & 17.69 & 19.40 & 29.66 \\\\
+                ASTGNN & 14.78 & 14.79 & 25.00 \\\\
+                Auto-DSTSGN & 14.59 & 14.22 & 25.17 \\\\
+                AutoSTG & 16.27 & 16.10 & 27.63 \\\\
+                AutoSTS & 14.61 & 14.18 & 24.71 \\\\
+                DCGCN & 15.29 & - & 25.98 \\\\
+                DCRNN & 18.18 & 18.91 & 30.31 \\\\
+                DeepGLO & 17.25 & 19.27 & 23.25 \\\\
+                DeepState & 15.59 & 18.69 & 20.21 \\\\
+                DSTAGNN & 15.57 & 14.68 & 27.21 \\\\
+                DyHSL & 15.49 & 14.38 & 27.06 \\\\
+                FourierGNN & 17.27 & 15.88 & 27.20 \\\\
+                Gboot & 15.43 & 14.51 & 26.42 \\\\
+                GMAN & 15.52 & 15.19 & 26.53 \\\\
+                GMSDR & 15.78 & 15.33 & 26.82 \\\\
+                GWN & 19.85 & 19.31 & 32.94 \\\\
+                HA & 31.58 & 33.78 & 52.39 \\\\
+                LSGCN & 17.94 & - & 29.85 \\\\
+                LSTM & 21.33 & 23.33 & 35.11 \\\\
+                LSTNet & 19.07 & 17.73 & 29.67 \\\\
+                N-BEATS & 18.45 & 18.35 & 31.23 \\\\
+                PAHNN & 14.02 & 13.19 & 23.67 \\\\
+                PDFormer & 21.82 & 21.47 & 36.75 \\\\
+                PYNet & 14.94 & 14.94 & 25.27 \\\\
+                SFM & 17.67 & 18.33 & 30.01 \\\\
+                SPGCL & 23.31 & 21.88 & 37.37 \\\\
+                STAGCN & 15.40 & 14.48 & 26.23 \\\\
+                STCGNN & 15.81 & 14.59 & 27.23 \\\\
+                StemGNN & 14.32 & 16.24 & 21.64 \\\\
+                STFGCN & 16.77 & 16.30 & 28.34 \\\\
+                STGBN & 15.22 & 14.78 & 27.09 \\\\
+                STGCN & 17.49 & 17.15 & 30.12 \\\\
+                STG2SEC & 19.03 & 21.55 & 29.73 \\\\
+                STGODE & 16.53 & 16.68 & 27.79 \\\\
+                STSGCN & 17.48 & 16.78 & 29.21 \\\\
+                STWave & 14.93 & 15.05 & 26.50 \\\\
+                STWave+ & 14.71 & 14.88 & 26.31 \\\\
+                SVR & 21.97 & 21.51 & 35.29 \\\\
+                TAMP-S2GCNets & 13.91 & 13.40 & 23.77 \\\\
+                TCN & 19.32 & 19.93 & 33.55 \\\\
+                TimesNet & 16.41 & 15.17 & 26.72 \\\\
+                VAR & 23.65 & 24.51 & 38.26 \\\\
+                W-DSTAGNN & 15.31 & 14.49 & 26.59 \\\\
+                Z-GCNETs & 14.20 & 13.88 & 25.29 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table26",
+                title: "Table 26",
+                dataset: "PeMS04",
+                latexSource: `\\begin{tabular}{|l|c|c|c|}
+                \\hline
+                Model & MAE & MAPE & RMSE \\\\
+                \\hline
+                AdaSTNet & 19.25 & 12.77 & 31.26 \\\\
+                AGCRN & 19.83 & 12.97 & 32.26 \\\\
+                ARIMA & 33.73 & 24.18 & 48.80 \\\\
+                ASTGCN & 22.93 & 16.56 & 35.22 \\\\
+                ASTGNN & 18.60 & 12.36 & 30.91 \\\\
+                Auto-DSTSGN & 18.85 & 13.21 & 30.48 \\\\
+                Autoformer & 23.76 & 18.01 & 36.59 \\\\
+                AutoSTG & 20.38 & 14.12 & 32.51 \\\\
+                AutoSTS & 18.76 & 12.84 & 30.31 \\\\
+                CL4ST & 18.49 & 12.00 & 30.17 \\\\
+                Crossformer & 20.40 & 14.62 & 32.79 \\\\
+                DCGCN & 20.28 & - & 31.65 \\\\
+                DCRNN & 24.70 & 17.12 & 38.12 \\\\
+                DGCRN & 19.04 & 12.80 & 30.82 \\\\
+                DMGF-Net & 20.59 & 13.63 & 32.43 \\\\
+                DSA-NET & 22.79 & 16.03 & 35.77 \\\\
+                DSTAGNN & 19.30 & 12.70 & 31.46 \\\\
+                DSTGN & 18.61 & 12.31 & 30.79 \\\\
+                DSTIGNN & 18.41 & 12.45 & 29.97 \\\\
+                DyHSL & 17.66 & 12.42 & 29.46 \\\\
+                EnhanceNet & 20.44 & 13.58 & 32.37 \\\\
+                FEDFormer & 22.86 & 16.04 & 35.07 \\\\
+                FOGS & 19.74 & 13.05 & 31.66 \\\\
+                FourierGNN & 22.98 & 15.14 & 36.23 \\\\
+                Gboot & 19.28 & 12.58 & 31.02 \\\\
+                GL-STGTN & 18.20 & 12.48 & 29.71 \\\\
+                GMAN & 20.93 & 14.06 & 33.34 \\\\
+                GMSDR & 20.49 & 14.15 & 32.13 \\\\
+                GODERN-FS & 19.17 & 12.74 & 30.96 \\\\
+                GRU & 23.68 & 16.44 & 39.27 \\\\
+                GWN & 19.36 & 13.31 & 31.72 \\\\
+                HA & 38.03 & 27.88 & 59.24 \\\\
+                LSGCN & 21.53 & 13.18 & 33.86 \\\\
+                LSTM & 23.81 & 18.12 & 36.62 \\\\
+                MTGNN & 24.89 & 17.29 & 39.66 \\\\
+                MTGODE & 19.55 & 13.08 & 32.99 \\\\
+                PAHNN & 16.28 & 11.98 & 27.62 \\\\
+                PDFormer & 25.75 & 17.55 & 42.09 \\\\
+                SCINet & 19.29 & 11.89 & 31.28 \\\\
+                SDGL & 18.65 & 12.38 & 31.30 \\\\
+                STAGCN & 19.02 & 12.46 & 30.75 \\\\
+                STCGNN & 19.39 & 12.71 & 31.17 \\\\
+                StemGNN & 21.61 & 16.10 & 33.80 \\\\
+                STExplainer & 18.57 & 12.13 & 30.14 \\\\
+                STFGCN & 19.83 & 13.02 & 31.88 \\\\
+                STG2Seq & 25.20 & 18.77 & 38.48 \\\\
+                STGCN & 21.16 & 13.83 & 34.89 \\\\
+                STGDN & 19.10 & 12.60 & 30.83 \\\\
+                STGNCDE & 19.21 & 12.76 & 31.09 \\\\
+                STGODE & 20.84 & 13.76 & 32.84 \\\\
+                ST-GTNN & 20.08 & 13.31 & 32.18 \\\\
+                STIDGCN & 18.47 & 12.42 & 29.90 \\\\
+                STNorm & 19.21 & 13.05 & 32.30 \\\\
+                STSGCN & 21.19 & 13.90 & 33.65 \\\\
+                STWave & 18.50 & 12.43 & 30.39 \\\\
+                STWawe+ & 18.25 & 12.21 & 30.14 \\\\
+                SVR & 28.70 & 19.20 & 44.56 \\\\
+                TAMP-S2GCNets & 19.74 & 13.22 & 31.74 \\\\
+                TCN & 23.22 & 15.59 & 37.26 \\\\
+                TimesNet & 21.63 & 13.15 & 34.90 \\\\
+                Transformer & 21.10 & 15.13 & 31.46 \\\\
+                TSGDC & 18.80 & 12.67 & 31.08 \\\\
+                VAR & 23.75 & 18.09 & 36.66 \\\\
+                W-DSTAGNN & 19.30 & 12.70 & 31.28 \\\\
+                Z-GCNETS & 19.50 & 12.78 & 31.61 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table27",
+                title: "Table 27",
+                dataset: "PeMS07",
+                latexSource: `\\begin{tabular}{|l|c|c|c|}
+                \\hline
+                Model & MAE & MAPE & RMSE \\\\
+                \\hline
+                AdaSTNet & 21.33 & 8.94 & 35.04 \\\\
+                AGCRN & 22.37 & 9.12 & 36.55 \\\\
+                AMGCN & 19.83 & 8.19 & 31.03 \\\\
+                ARIMA & 38.17 & 19.46 & 59.27 \\\\
+                ASTGCN & 24.01 & 10.73 & 37.87 \\\\
+                Auto-DSTSGN & 20.08 & 8.57 & 33.02 \\\\
+                AutoSTG & 23.22 & 9.95 & 36.47 \\\\
+                AutoSTS & 20.26 & 8.54 & 33.09 \\\\
+                CL4ST & 20.20 & 8.53 & 34.06 \\\\
+                DCGCN & 22.06 & - & 34.66 \\\\
+                DCRNN & 25.22 & 11.82 & 38.61 \\\\
+                DGCRN & 19.91 & 8.32 & 31.47 \\\\
+                DMSTG & 19.98 & 8.56 & 33.08 \\\\
+                DMSTGCN & 20.77 & 8.94 & 33.67 \\\\
+                DSTAGNN & 21.42 & 9.01 & 34.51 \\\\
+                DSTCGCN & 20.37 & 8.64 & 33.47 \\\\
+                DyHSL & 18.84 & 8.11 & 31.65 \\\\
+                Gboot & 21.35 & 9.02 & 34.43 \\\\
+                GMAN & 21.56 & 9.51 & 34.97 \\\\
+                GMSDR & 22.27 & 9.86 & 34.94 \\\\
+                GWN & 26.85 & 12.12 & 42.78 \\\\
+                FOGS & 21.28 & 8.95 & 34.88 \\\\
+                FourierGNN & 25.47 & 10.76 & 39.69 \\\\
+                HA & 45.12 & 24.51 & 65.64 \\\\
+                LSGCN & 27.31 & 11.98 & 41.46 \\\\
+                LSTM & 29.98 & 13.20 & 45.94 \\\\
+                MTGNN & 20.57 & 9.12 & 33.54 \\\\
+                PAHNN & 17.35 & 7.64 & 29.78 \\\\
+                PDFormer & 23.92 & 11.62 & 36.76 \\\\
+                PGCN & 20.03 & 8.78 & 32.54 \\\\
+                PYNet & 19.61 & 8.36 & 32.85 \\\\
+                RGSL & 20.73 & 8.71 & 34.48 \\\\
+                RST-LTG & 19.49 & 8.26 & 32.91 \\\\
+                SLCNN & 20.38 & 8.85 & 33.27 \\\\
+                SPGCL & 31.35 & 18.32 & 46.34 \\\\
+                STAGCN & 21.10 & 8.92 & 34.10 \\\\
+                StemGNN & 22.23 & 9.20 & 36.46 \\\\
+                STExplainer & 20.00 & 8.51 & 33.45 \\\\
+                STFGCN & 22.07 & 9.21 & 35.80 \\\\
+                STFGNN & 23.46 & 9.21 & 36.60 \\\\
+                STG2Seq & 32.77 & 20.16 & 47.16 \\\\
+                STGBN & 21.33 & 8.94 & 35.04 \\\\
+                STGCN & 25.38 & 11.08 & 38.78 \\\\
+                STGNCDE & 20.53 & 8.80 & 33.84 \\\\
+                STGODE & 22.59 & 10.14 & 37.54 \\\\
+                ST-GRAT & 20.69 & 9.06 & 33.01 \\\\
+                STNorm & 20.59 & 8.61 & 34.86 \\\\
+                STSGCN & 24.26 & 10.21 & 39.03 \\\\
+                STWave & 19.94 & 8.38 & 33.88 \\\\
+                STWave+ & 19.59 & 8.17 & 33.53 \\\\
+                SVR & 32.49 & 14.26 & 50.22 \\\\
+                TAMP-S2GCNets & 21.84 & 9.24 & 35.42 \\\\
+                TCN & 32.72 & 14.26 & 42.23 \\\\
+                TimesNet & 25.12 & 10.60 & 40.71 \\\\
+                Transformer & 22.07 & 10.12 & 34.21 \\\\
+                TSGDC & 19.96 & 8.54 & 33.25 \\\\
+                VAR & 50.22 & 32.22 & 75.63 \\\\
+                Z-GCNETs & 21.77 & 9.25 & 35.17 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table28",
+                title: "Table 28",
+                dataset: "PeMS08",
+                latexSource: `\\begin{tabular}{|l|c|c|c|}
+                \\hline
+                Model & MAE & MAPE & RMSE \\\\
+                \\hline
+                AdaSTNet & 15.72 & 9.98 & 24.72 \\\\
+                AGCRN & 15.95 & 10.09 & 25.22 \\\\
+                ARIMA & 31.09 & 22.73 & 44.32 \\\\
+                ASTGCN & 18.25 & 11.64 & 28.06 \\\\
+                ASTGNN & 15.00 & 9.50 & 24.70 \\\\
+                Auto-DSTSGN & 14.74 & 9.45 & 23.76 \\\\
+                Autoformer & 21.04 & 15.98 & 31.33 \\\\
+                AutoSTG & 16.37 & 10.36 & 25.46 \\\\
+                AutoSTS & 14.65 & 9.49 & 23.52 \\\\
+                CL4ST & 14.74 & 9.61 & 24.17 \\\\
+                Crossformer & 16.25 & 11.14 & 26.14 \\\\
+                DCGCN & 15.68 & - & 24.39 \\\\
+                DCRNN & 16.82 & 10.92 & 26.36 \\\\
+                DHSL & 15.19 & 9.86 & 24.61 \\\\
+                DGCRN & 16.22 & 12.06 & 26.10 \\\\
+                DMGF-Net & 16.48 & 10.56 & 25.73 \\\\
+                DMSTG & 13.85 & 9.26 & 23.30 \\\\
+                DSA-NET & 17.14 & 11.32 & 26.96 \\\\
+                DSTAGNN & 15.67 & - & 25.37 \\\\
+                DSTCGCN & 15.18 & 9.68 & 24.49 \\\\
+                DSTIGNN & 13.88 & 9.04 & 23.64 \\\\
+                DyHSL & 14.01 & 8.87 & 22.91 \\\\
+                EnhanceNet & 16.33 & 10.39 & 25.56 \\\\
+                FC-GAGA & 19.41 & 13.53 & 30.22 \\\\
+                FEDformer & 19.55 & 13.58 & 29.30 \\\\
+                FNN & 24.24 & 16.21 & 37.57 \\\\
+                FOGS & 15.73 & 9.88 & 24.92 \\\\
+                Gboot & 15.54 & 9.76 & 24.53 \\\\
+                GL-STGTN & 14.00 & 9.50 & 23.41 \\\\
+                GMAN & 15.31 & 10.13 & 24.92 \\\\
+                GMSDR & 16.36 & 10.28 & 25.58 \\\\
+                GODERN-FS & 15.59 & 9.95 & 24.79 \\\\
+                GRU & 22.00 & 13.33 & 36.24 \\\\
+                GWN & 15.07 & 9.51 & 23.85 \\\\
+                HA & 34.86 & 24.07 & 52.04 \\\\
+                iDCGCN & 15.56 & - & 25.02 \\\\
+                LSGCN & 17.73 & 11.20 & 26.76 \\\\
+                LSTM & 22.20 & 14.20 & 34.06 \\\\
+                MRA-BGCN & 18.87 & 12.96 & 28.56 \\\\
+                MTGNN & 15.71 & 10.03 & 24.62 \\\\
+                MTGODE & 15.61 & 10.15 & 25.96 \\\\
+                PAHNN & 13.58 & 8.35 & 22.11 \\\\
+                PYNet & 14.03 & 9.39 & 23.84 \\\\
+                RGSL & 15.49 & 9.96 & 24.80 \\\\
+                RST-LTG & 13.61 & 9.05 & 23.15 \\\\
+                SCINet & 15.78 & 9.97 & 24.60 \\\\
+                SDGL & 14.93 & 9.61 & 24.13 \\\\
+                SNAS4MTF & 15.07 & 9.67 & 24.00 \\\\
+                STAGCN & 15.36 & 9.80 & 24.32 \\\\
+                STCGNN & 15.55 & 10.02 & 24.61 \\\\
+                StemGNN & 15.91 & 10.90 & 25.44 \\\\
+                STExplainer & 14.59 & 9.80 & 23.91 \\\\
+                STFGNN & 16.64 & 10.60 & 26.25 \\\\
+                STGNCDE & 15.45 & 9.92 & 24.81 \\\\
+                STG2Seq & 20.17 & 17.32 & 30.71 \\\\
+                STGBN & 15.35 & 9.71 & 24.18 \\\\
+                STGCN & 17.50 & 11.29 & 27.09 \\\\
+                STGMN & 16.04 & - & 24.18 \\\\
+                STGODE & 16.79 & 10.58 & 26.01 \\\\
+                ST-GTNN & 16.51 & 10.45 & 25.19 \\\\
+                STIDGCN & 14.10 & 9.15 & 23.72 \\\\
+                STMetaNet & 18.75 & 14.49 & 27.50 \\\\
+                STNorm & 15.39 & 9.91 & 24.80 \\\\
+                STSGCN & 17.13 & 10.96 & 26.80 \\\\
+                STWave & 13.42 & 8.90 & 23.40 \\\\
+                STWave+ & 13.21 & 8.63 & 23.04 \\\\
+                SVR & 23.25 & 14.64 & 36.16 \\\\
+                TAMP-S2GCNets & 13.36 & 10.15 & 25.98 \\\\
+                TCN & 22.72 & 14.03 & 35.79 \\\\
+                TimesNet & 19.01 & 11.83 & 30.65 \\\\
+                VAR & 19.19 & 13.10 & 29.81 \\\\
+                Z-GCNETs & 15.76 & 10.01 & 25.11 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_fd001",
+                title: "Table 32 – Dataset FD001",
+                dataset: "C-MAPSS",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RMSE & Score \\\\
+                \\hline
+                1D CNN & 12.61 & 273.70 \\\\
+                2D CNN & 18.45 & 1286.70 \\\\
+                AGCNN & 12.42 & 225.51 \\\\
+                ATT-LSTM & 13.95 & 320.00 \\\\
+                BiGRU-AS & 13.68 & 284.00 \\\\
+                Bi-LSTM & 13.65 & 295.00 \\\\
+                BiLSTM-ED & 14.74 & 273.00 \\\\
+                BLCNN & 13.18 & 302.28 \\\\
+                CDSG & 11.26 & 188.00 \\\\
+                ChebyNet-EdgePool & 15.21 & 450.22 \\\\
+                CNN-LSTM & 14.40 & 290.00 \\\\
+                CNN-Transformer & 12.25 & 198.00 \\\\
+                ConvGAT & 11.34 & 197.43 \\\\
+                C-Transformer & 13.79 & 475.46 \\\\
+                DBN & 15.21 & 417.59 \\\\
+                DCNN & 12.61 & 273.70 \\\\
+                DSAN & 13.40 & 242.00 \\\\
+                DS-STFN & 10.92 & 161.35 \\\\
+                Earlier CNN & 18.45 & 1287.00 \\\\
+                ELM & 17.27 & 523.00 \\\\
+                GA+RBM+LSTM & 12.56 & 231.00 \\\\
+                GA-Transformer & 11.63 & 215.00 \\\\
+                GAT-DAT & 13.83 & 318.60 \\\\
+                GAT-EdgePool & 13.53 & 309.59 \\\\
+                GAT-TopkPool & 13.21 & 303.18 \\\\
+                GB & 15.67 & 474.01 \\\\
+                GGCN & 11.82 & 186.70 \\\\
+                HAGCN & 11.93 & 222.30 \\\\
+                HDNN & 13.02 & 245.00 \\\\
+                HGNN-ACGF & 12.58 & 218.04 \\\\
+                IMDSSN & 12.14 & 206.11 \\\\
+                LSTM & 16.14 & 338.00 \\\\
+                LSTMBS & 14.89 & 481.00 \\\\
+                MODBN & 15.04 & 334.23 \\\\
+                MS-CNN & 11.44 & 196.22 \\\\
+                RF & 17.91 & 479.75 \\\\
+                SBI & 13.58 & 228.00 \\\\
+                SMDN & 13.40 & - \\\\
+                STFA & 11.35 & 194.44 \\\\
+                STP-GNN & 11.38 & 192.17 \\\\
+                TATFA-Transformer & 12.21 & 261.50 \\\\
+                Transformer & 12.92 & 276.27 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_fd002",
+                title: "Table 32 – Dataset FD002",
+                dataset: "C-MAPSS",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RMSE & Score \\\\
+                \\hline
+                1D CNN & 22.36 & 10412.00 \\\\
+                2D CNN & 30.29 & 13570.00 \\\\
+                AGCNN & 19.43 & 1492.76 \\\\
+                ATT-LSTM & 17.65 & 2102.00 \\\\
+                BiGRU-AS & 20.81 & 2454.00 \\\\
+                Bi-LSTM & 23.18 & 4130.00 \\\\
+                BiLSTM-ED & 22.07 & 3099.00 \\\\
+                BLCNN & 19.09 & 1557.56 \\\\
+                CDSG & 18.13 & 1740.00 \\\\
+                ChebyNet-EdgePool & 16.28 & 1229.22 \\\\
+                CNN-LSTM & 27.23 & 9869.00 \\\\
+                CNN-Transformer & 17.08 & 1575.00 \\\\
+                ConvGAT & 14.12 & 771.61 \\\\
+                C-Transformer & 16.11 & 2214.59 \\\\
+                DBN & 27.12 & 9031.64 \\\\
+                DCNN & 22.36 & 10412.00 \\\\
+                DSAN & 22.06 & 2869.00 \\\\
+                DS-STFN & 13.77 & 946.34 \\\\
+                Earlier CNN & 30.29 & 13570.00 \\\\
+                ELM & 37.28 & 498149.97 \\\\
+                GA+RBM+LSTM & 22.73 & 3366.00 \\\\
+                GA-Transformer & 15.99 & 1133.00 \\\\
+                GAT-DAT & 14.81 & 1163.80 \\\\
+                GAT-EdgePool & 15.07 & 1380.41 \\\\
+                GAT-TopkPool & 17.25 & 5338.80 \\\\
+                GB & 29.09 & 87280.06 \\\\
+                GGCN & 17.24 & 1493.70 \\\\
+                HAGCN & 15.05 & 1144.10 \\\\
+                HDNN & 15.24 & 1282.42 \\\\
+                HGNN-ACGF & 21.67 & 4584.97 \\\\
+                IMDSSN & 17.40 & 1775.15 \\\\
+                LSTM & 24.49 & 4450.00 \\\\
+                LSTMBS & 26.86 & 7982.00 \\\\
+                MODBN & 25.05 & 5585.00 \\\\
+                MS-CNN & 19.35 & 3747.00 \\\\
+                RF & 29.59 & 70456.86 \\\\
+                SBI & 19.59 & 2650.00 \\\\
+                SMDN & - & - \\\\
+                STFA & 19.17 & 2493.09 \\\\
+                STP-GNN & 15.81 & 1094.81 \\\\
+                TATFA-Transformer & 15.07 & 1359.70 \\\\
+                Transformer & 22.64 & 1960.25 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_fd003",
+                title: "Table 32 – Dataset FD003",
+                dataset: "C-MAPSS",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RMSE & Score \\\\
+                \\hline
+                1D CNN & 12.64 & 284.10 \\\\
+                2D CNN & 19.82 & 1596.20 \\\\
+                AGCNN & 13.39 & 227.09 \\\\
+                ATT-LSTM & 12.72 & 223.00 \\\\
+                BiGRU-AS & 15.53 & 428.00 \\\\
+                Bi-LSTM & 13.74 & 317.00 \\\\
+                BiLSTM-ED & 17.48 & 574.00 \\\\
+                BLCNN & 13.75 & 381.37 \\\\
+                CDSG & 12.03 & 218.00 \\\\
+                ChebyNet-EdgePool & 14.67 & 421.02 \\\\
+                CNN-LSTM & 14.32 & 316.00 \\\\
+                CNN-Transformer & 13.39 & 290.00 \\\\
+                ConvGAT & 10.97 & 235.26 \\\\
+                C-Transformer & 17.10 & 939.10 \\\\
+                DBN & 14.71 & 442.43 \\\\
+                DCNN & 12.64 & 284.10 \\\\
+                DSAN & 15.12 & 497.00 \\\\
+                DS-STFN & 10.01 & 150.42 \\\\
+                Earlier CNN & 19.82 & 1596.00 \\\\
+                ELM & 18.90 & 573.78 \\\\
+                GA+RBM+LSTM & 12.10 & 251.00 \\\\
+                GA-Transformer & 11.35 & 228.00 \\\\
+                GAT-DAT & 14.85 & 438.50 \\\\
+                GAT-EdgePool & 14.66 & 470.74 \\\\
+                GAT-TopkPool & 15.36 & 507.52 \\\\
+                GB & 16.84 & 576.72 \\\\
+                GGCN & 12.21 & 245.19 \\\\
+                HAGCN & 11.53 & 240.30 \\\\
+                HDNN & 12.22 & 287.72 \\\\
+                HGNN-ACGF & 12.40 & 248.47 \\\\
+                IMDSSN & 12.35 & 229.54 \\\\
+                LSTM & 16.18 & 852.00 \\\\
+                LSTMBS & 15.11 & 493.00 \\\\
+                MODBN & 12.51 & 421.91 \\\\
+                MS-CNN & 11.67 & 241.89 \\\\
+                RF & 20.27 & 711.13 \\\\
+                SBI & 19.16 & 1727.00 \\\\
+                SMDN & - & - \\\\
+                STFA & 11.64 & 224.53 \\\\
+                STP-GNN & 11.02 & 199.58 \\\\
+                TATFA-Transformer & 11.23 & 210.21 \\\\
+                Transformer & 13.04 & 284.41 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_fd004",
+                title: "Table 32 – Dataset FD004",
+                dataset: "C-MAPSS",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RMSE & Score \\\\
+                \\hline
+                1D CNN & 23.31 & 12466.00 \\\\
+                2D CNN & 29.16 & 7886.40 \\\\
+                AGCNN & 21.50 & 3392.60 \\\\
+                ATT-LSTM & 20.21 & 3100.00 \\\\
+                BiGRU-AS & 27.31 & 4708.00 \\\\
+                Bi-LSTM & 24.86 & 5430.00 \\\\
+                BiLSTM-ED & 23.49 & 3202.00 \\\\
+                BLCNN & 20.97 & 3858.78 \\\\
+                CDSG & 19.73 & 2332.00 \\\\
+                ChebyNet-EdgePool & 16.26 & 1159.74 \\\\
+                CNN-LSTM & 26.69 & 6594.00 \\\\
+                CNN-Transformer & 19.86 & 1741.00 \\\\
+                ConvGAT & 15.51 & 1231.17 \\\\
+                C-Transformer & 19.77 & 3237.37 \\\\
+                DBN & 29.88 & 7954.51 \\\\
+                DCNN & 23.31 & 12466.00 \\\\
+                DSAN & 21.03 & 2677.00 \\\\
+                DS-STFN & 15.53 & 1079.91 \\\\
+                Earlier CNN & 29.16 & 7886.00 \\\\
+                ELM & 38.43 & 121414.00 \\\\
+                GA+RBM+LSTM & 22.66 & 2840.00 \\\\
+                GA-Transformer & 20.15 & 2672.00 \\\\
+                GAT-DAT & 16.80 & 1928.60 \\\\
+                GAT-EdgePool & 17.60 & 1726.53 \\\\
+                GAT-TopkPool & 21.44 & 2971.93 \\\\
+                GB & 29.01 & 17817.92 \\\\
+                GGCN & 17.36 & 1371.50 \\\\
+                HAGCN & 15.74 & 1218.60 \\\\
+                HDNN & 18.16 & 1527.42 \\\\
+                HGNN-ACGF & 22.43 & 2737.86 \\\\
+                IMDSSN & 19.78 & 2852.81 \\\\
+                LSTM & 28.17 & 5550.00 \\\\
+                LSTMBS & 27.11 & 5200.00 \\\\
+                MODBN & 28.66 & 6557.00 \\\\
+                MS-CNN & 22.22 & 4844.00 \\\\
+                RF & 31.12 & 46567.63 \\\\
+                SBI & 22.15 & 2901.00 \\\\
+                SMDN & 23.40 & 4302.00 \\\\
+                STFA & 21.41 & 2760.13 \\\\
+                STP-GNN & 17.77 & 1692.19 \\\\
+                TATFA-Transformer & 18.81 & 2506.35 \\\\
+                Transformer & 24.81 & 3892.24 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_36_3_steps",
+                title: "Table 36 - 3 steps horizon",
+                dataset: "Electricity",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.0719 & 0.9506 \\\\
+                AGCRN & 0.0766 & 0.9408 \\\\
+                AGLG-GRU & 0.0738 & 0.9434 \\\\
+                AR & 0.0995 & 0.8845 \\\\
+                ARIMA & 0.0917 & 0.8902 \\\\
+                Autoformer & 0.1258 & 0.9147 \\\\
+                Crossformer & 0.0742 & 0.9452 \\\\
+                DPGNN & 0.0720 & 0.9527 \\\\
+                DSTGN & 0.0713 & 0.9518 \\\\
+                DSTIGNN & 0.0733 & 0.9515 \\\\
+                ESG & 0.0718 & 0.9494 \\\\
+                FEDformer & 0.0889 & 0.9321 \\\\
+                GP & 0.1500 & 0.8670 \\\\
+                GRU & 0.1102 & 0.8597 \\\\
+                GTS & 0.0790 & 0.9291 \\\\
+                GWN & 0.0746 & 0.9459 \\\\
+                HyDCNN & 0.0832 & 0.9354 \\\\
+                Informer & 0.1337 & 0.8903 \\\\
+                LSTNet & 0.0864 & 0.9283 \\\\
+                MAGL & 0.0728 & 0.9476 \\\\
+                MAGNN & 0.0745 & 0.9476 \\\\
+                MDST-GNN & 0.0738 & 0.9454 \\\\
+                MTGNN & 0.0745 & 0.9474 \\\\
+                MTGODE & 0.0736 & 0.9430 \\\\
+                MTHetGNN & 0.0749 & 0.9456 \\\\
+                MTNet & 0.0840 & 0.9319 \\\\
+                RNN-GRU & 0.1102 & 0.8597 \\\\
+                SARIMA & 0.0906 & 0.9055 \\\\
+                SCINet & 0.0740 & 0.9494 \\\\
+                SDGL & 0.0698 & 0.9534 \\\\
+                SDLGNN & 0.0726 & 0.9502 \\\\
+                SDLGNN-Corr & 0.0737 & 0.9475 \\\\
+                StemGNN & 0.0799 & 0.9490 \\\\
+                TDG4-MSF & 0.0731 & 0.9499 \\\\
+                Theta & 0.0975 & 0.8906 \\\\
+                TPGNN & 0.0627 & 0.9417 \\\\
+                TPA-LSTM & 0.0823 & 0.9439 \\\\
+                TRMF & 0.1802 & 0.8538 \\\\
+                VAR-MLP & 0.1393 & 0.8708 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_36_6_steps",
+                title: "Table 36 - 6 steps horizon",
+                dataset: "Electricity",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.0809 & 0.9386 \\\\
+                AGCRN & 0.0894 & 0.9309 \\\\
+                AGLG-GRU & 0.0864 & 0.9302 \\\\
+                AR & 0.1035 & 0.8632 \\\\
+                ARIMA & 0.1002 & 0.8834 \\\\
+                Autoformer & 0.1344 & 0.9001 \\\\
+                Crossformer & 0.0855 & 0.9351 \\\\
+                DPGNN & 0.0810 & 0.9422 \\\\
+                DSTGN & 0.0821 & 0.9424 \\\\
+                DSTIGNN & 0.0820 & 0.9412 \\\\
+                ESG & 0.0844 & 0.9372 \\\\
+                FEDformer & 0.1006 & 0.9191 \\\\
+                GP & 0.1907 & 0.8334 \\\\
+                GRU & 0.1144 & 0.8623 \\\\
+                GTS & 0.0884 & 0.9187 \\\\
+                GWN & 0.0922 & 0.9310 \\\\
+                HyDCNN & 0.0898 & 0.9329 \\\\
+                Informer & 0.1532 & 0.8705 \\\\
+                LSTNet & 0.0931 & 0.9135 \\\\
+                MAGL & 0.0824 & 0.9377 \\\\
+                MAGNN & 0.0876 & 0.9323 \\\\
+                MDST-GNN & 0.0833 & 0.9346 \\\\
+                MTGNN & 0.0878 & 0.9316 \\\\
+                MTGODE & 0.0809 & 0.9340 \\\\
+                MTHetGNN & 0.0892 & 0.9307 \\\\
+                MTNet & 0.0901 & 0.9226 \\\\
+                RNN-GRU & 0.1144 & 0.8623 \\\\
+                SARIMA & 0.0999 & 0.8829 \\\\
+                SCINet & 0.0845 & 0.9387 \\\\
+                SDGL & 0.0805 & 0.9445 \\\\
+                SDLGNN & 0.0820 & 0.9384 \\\\
+                SDLGNN-Corr & 0.0841 & 0.9346 \\\\
+                StemGNN & 0.0909 & 0.9397 \\\\
+                TDG4-MSF & 0.0828 & 0.9371 \\\\
+                Theta & 0.1029 & 0.8723 \\\\
+                TPGNN & 0.0685 & 0.9362 \\\\
+                TPA-LSTM & 0.0916 & 0.9337 \\\\
+                TRMF & 0.2039 & 0.8424 \\\\
+                VAR-MLP & 0.1620 & 0.8389 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_36_12_steps",
+                title: "Table 36 - 12 steps horizon",
+                dataset: "Electricity",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.0887 & 0.9312 \\\\
+                AGCRN & 0.0921 & 0.9222 \\\\
+                AGLG-GRU & 0.0912 & 0.9283 \\\\
+                AR & 0.1050 & 0.8591 \\\\
+                ARIMA & 0.1028 & 0.8604 \\\\
+                Autoformer & 0.1357 & 0.8921 \\\\
+                Crossformer & 0.0901 & 0.9280 \\\\
+                DPGNN & 0.0893 & 0.9357 \\\\
+                DSTGN & 0.0887 & 0.9357 \\\\
+                DSTIGNN & 0.0899 & 0.9338 \\\\
+                ESG & 0.0898 & 0.9321 \\\\
+                FEDformer & 0.1154 & 0.9080 \\\\
+                GP & 0.1621 & 0.8394 \\\\
+                GRU & 0.1183 & 0.8472 \\\\
+                GTS & 0.0957 & 0.9135 \\\\
+                GWN & 0.0909 & 0.9267 \\\\
+                HyDCNN & 0.0921 & 0.9285 \\\\
+                Informer & 0.1635 & 0.8527 \\\\
+                LSTNet & 0.1007 & 0.9077 \\\\
+                MAGL & 0.0893 & 0.9299 \\\\
+                MAGNN & 0.0908 & 0.9282 \\\\
+                MDST-GNN & 0.0884 & 0.9264 \\\\
+                MTGNN & 0.0916 & 0.9278 \\\\
+                MTGODE & 0.0891 & 0.9279 \\\\
+                MTHetGNN & 0.0959 & 0.8783 \\\\
+                MTNet & 0.0934 & 0.9165 \\\\
+                RNN-GRU & 0.1183 & 0.8472 \\\\
+                SARIMA & 0.1026 & 0.8674 \\\\
+                SCINet & 0.0929 & 0.9305 \\\\
+                SDGL & 0.0889 & 0.9351 \\\\
+                SDLGNN & 0.0896 & 0.9304 \\\\
+                SDLGNN-Corr & 0.0923 & 0.9263 \\\\
+                StemGNN & 0.0989 & 0.9342 \\\\
+                TDG4-MSF & 0.0894 & 0.9306 \\\\
+                Theta & 0.1040 & 0.8576 \\\\
+                TPGNN & 0.0699 & 0.9285 \\\\
+                TPA-LSTM & 0.0964 & 0.9250 \\\\
+                TRMF & 0.2186 & 0.8304 \\\\
+                VAR-MLP & 0.1557 & 0.8192 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_36_24_steps",
+                title: "Table 36 - 24 steps horizon",
+                dataset: "Electricity",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.0930 & 0.9294 \\\\
+                AGCRN & 0.0967 & 0.9183 \\\\
+                AGLG-GRU & 0.0947 & 0.9274 \\\\
+                AR & 0.1054 & 0.8595 \\\\
+                ARIMA & 0.1042 & 0.8487 \\\\
+                Autoformer & 0.1554 & 0.8704 \\\\
+                Crossformer & 0.0967 & 0.9205 \\\\
+                DPGNN & 0.0935 & 0.9291 \\\\
+                DSTGN & - & - \\\\
+                DSTIGNN & 0.0954 & 0.9289 \\\\
+                ESG & 0.0962 & 0.9279 \\\\
+                FEDformer & 0.1202 & 0.9012 \\\\
+                GP & 0.1273 & 0.8818 \\\\
+                GRU & - & - \\\\
+                GTS & 0.0951 & 0.9098 \\\\
+                GWN & 0.0962 & 0.9226 \\\\
+                HyDCNN & - & - \\\\
+                Informer & 0.1834 & 0.8399 \\\\
+                LSTNet & 0.1007 & 0.9119 \\\\
+                MAGL & 0.0951 & 0.9240 \\\\
+                MAGNN & 0.0963 & 0.9217 \\\\
+                MDST-GNN & 0.0922 & 0.9222 \\\\
+                MTGNN & 0.0953 & 0.9234 \\\\
+                MTGODE & - & - \\\\
+                MTHetGNN & 0.0969 & 0.8782 \\\\
+                MTNet & 0.0969 & 0.9147 \\\\
+                RNN-GRU & 0.1295 & 0.8651 \\\\
+                SARIMA & 0.1036 & 0.8621 \\\\
+                SCINet & 0.0967 & 0.9270 \\\\
+                SDGL & 0.0935 & 0.9301 \\\\
+                SDLGNN & 0.0947 & 0.9257 \\\\
+                SDLGNN-Corr & 0.0971 & 0.9227 \\\\
+                StemGNN & 0.1019 & 0.9209 \\\\
+                TDG4-MSF & 0.0969 & 0.9246 \\\\
+                Theta & 0.1041 & 0.8595 \\\\
+                TPGNN & 0.0936 & 0.9293 \\\\
+                TPA-LSTM & 0.1006 & 0.9133 \\\\
+                TRMF & 0.3656 & 0.7471 \\\\
+                VAR-MLP & 0.1274 & 0.8679 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_37_3_steps",
+                title: "Table 37 - 3 steps horizon",
+                dataset: "Exchange rate",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                AGCRN & 0.0269 & 0.9717 \\\\
+                AGLG-GRU & 0.0191 & 0.9792 \\\\
+                AR & 0.0228 & 0.9734 \\\\
+                ARIMA & 0.0198 & 0.9754 \\\\
+                Autoformer & 0.0291 & 0.9631 \\\\
+                Crossformer & 0.0226 & 0.9759 \\\\
+                DPGNN & 0.0184 & 0.9797 \\\\
+                DSTGN & 0.0179 & 0.9782 \\\\
+                DSTIGNN & 0.0173 & 0.9818 \\\\
+                ESG & 0.0181 & 0.9792 \\\\
+                FEDformer & 0.0256 & 0.9701 \\\\
+                GP & 0.0239 & 0.8713 \\\\
+                GRU & 0.0192 & 0.9786 \\\\
+                GTS & 0.0180 & 0.9898 \\\\
+                GWN & 0.0251 & 0.9740 \\\\
+                Informer & 0.0882 & 0.9563 \\\\
+                LSTNet & 0.0226 & 0.9735 \\\\
+                MAGL & 0.0178 & 0.9797 \\\\
+                MAGNN & 0.0183 & 0.9778 \\\\
+                MDST-GNN & 0.0172 & 0.9811 \\\\
+                MTGNN & 0.0194 & 0.9786 \\\\
+                MTHetGNN & 0.0198 & 0.9769 \\\\
+                MTNet & 0.0212 & 0.9767 \\\\
+                RNN-GRU & 0.0192 & 0.9786 \\\\
+                SARIMA & 0.0197 & 0.9748 \\\\
+                SCINet & 0.0171 & 0.9787 \\\\
+                SDGL & 0.0180 & 0.9808 \\\\
+                StemGNN & 0.0506 & 0.8871 \\\\
+                TDG4-MSF & 0.0172 & 0.9825 \\\\
+                Theta & 0.0497 & 0.9738 \\\\
+                TPA-LSTM & 0.0174 & 0.9790 \\\\
+                TPGNN & 0.0174 & 0.9792 \\\\
+                TRMF & 0.0351 & 0.9142 \\\\
+                VAR-MLP & 0.0265 & 0.8609 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_37_6_steps",
+                title: "Table 37 - 6 steps horizon",
+                dataset: "Exchange rate",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                AGCRN & 0.0331 & 0.9615 \\\\
+                AGLG-GRU & 0.0233 & 0.9701 \\\\
+                AR & 0.0279 & 0.9656 \\\\
+                ARIMA & 0.0261 & 0.9721 \\\\
+                Autoformer & 0.0379 & 0.9397 \\\\
+                Crossformer & 0.0269 & 0.9656 \\\\
+                DPGNN & 0.0246 & 0.9715 \\\\
+                DSTGN & 0.0250 & 0.9715 \\\\
+                DSTIGNN & 0.0244 & 0.9723 \\\\
+                ESG & 0.0246 & 0.9717 \\\\
+                FEDformer & 0.0287 & 0.9555 \\\\
+                GP & 0.0272 & 0.8193 \\\\
+                GRU & 0.0264 & 0.9712 \\\\
+                GTS & 0.0260 & 0.9824 \\\\
+                GWN & 0.0300 & 0.9640 \\\\
+                Informer & 0.1081 & 0.9321 \\\\
+                LSTNet & 0.0280 & 0.9658 \\\\
+                MAGL & 0.0246 & 0.9716 \\\\
+                MAGNN & 0.0246 & 0.9712 \\\\
+                MDST-GNN & 0.0245 & 0.9727 \\\\
+                MTGNN & 0.0259 & 0.9708 \\\\
+                MTHetGNN & 0.0259 & 0.9701 \\\\
+                MTNet & 0.0258 & 0.9703 \\\\
+                RNN-GRU & 0.0264 & 0.9712 \\\\
+                SARIMA & 0.0253 & 0.9643 \\\\
+                SCINet & 0.0240 & 0.9704 \\\\
+                SDGL & 0.0249 & 0.9730 \\\\
+                StemGNN & 0.0674 & 0.8703 \\\\
+                TDG4-MSF & 0.0244 & 0.9718 \\\\
+                Theta & 0.0257 & 0.9656 \\\\
+                TPA-LSTM & 0.0241 & 0.9709 \\\\
+                TPGNN & 0.0250 & 0.9687 \\\\
+                TRMF & 0.0875 & 0.8123 \\\\
+                VAR-MLP & 0.0394 & 0.8725 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_37_12_steps",
+                title: "Table 37 - 12 steps horizon",
+                dataset: "Exchange rate",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                AGCRN & 0.0374 & 0.9531 \\\\
+                AGLG-GRU & 0.0328 & 0.9548 \\\\
+                AR & 0.0353 & 0.9526 \\\\
+                ARIMA & 0.0344 & 0.9548 \\\\
+                Autoformer & 0.0441 & 0.9201 \\\\
+                Crossformer & 0.0358 & 0.9436 \\\\
+                DPGNN & 0.0346 & 0.9564 \\\\
+                DSTGN & 0.0346 & 0.9562 \\\\
+                DSTIGNN & 0.0333 & 0.9571 \\\\
+                ESG & 0.0345 & 0.9564 \\\\
+                FEDformer & 0.0379 & 0.9385 \\\\
+                GP & 0.0394 & 0.8484 \\\\
+                GRU & 0.0408 & 0.9351 \\\\
+                GTS & 0.0333 & 0.9701 \\\\
+                GWN & 0.0381 & 0.9510 \\\\
+                Informer & 0.1301 & 0.8911 \\\\
+                LSTNet & 0.0356 & 0.9511 \\\\
+                MAGL & 0.0337 & 0.9567 \\\\
+                MAGNN & 0.0343 & 0.9557 \\\\
+                MDST-GNN & 0.0337 & 0.9578 \\\\
+                MTGNN & 0.0349 & 0.9551 \\\\
+                MTHetGNN & 0.0345 & 0.9539 \\\\
+                MTNet & 0.0347 & 0.9561 \\\\
+                RNN-GRU & 0.0408 & 0.9531 \\\\
+                SARIMA & 0.0338 & 0.9495 \\\\
+                SCINet & 0.0331 & 0.9553 \\\\
+                SDGL & 0.0342 & 0.9583 \\\\
+                StemGNN & 0.0676 & 0.8499 \\\\
+                TDG4-MSF & 0.0330 & 0.9569 \\\\
+                Theta & 0.0342 & 0.9510 \\\\
+                TPA-LSTM & 0.0341 & 0.9564 \\\\
+                TPGNN & 0.0350 & 0.9509 \\\\
+                TRMF & 0.0494 & 0.8993 \\\\
+                VAR-MLP & 0.0407 & 0.8280 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_37_24_steps",
+                title: "Table 37 - 24 steps horizon",
+                dataset: "Exchange rate",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                AGCRN & 0.0476 & 0.9334 \\\\
+                AGLG-GRU & 0.0449 & 0.9372 \\\\
+                AR & 0.0445 & 0.9357 \\\\
+                ARIMA & 0.0445 & 0.9301 \\\\
+                Autoformer & 0.0501 & 0.9012 \\\\
+                Crossformer & 0.0489 & 0.9291 \\\\
+                DPGNN & 0.0456 & 0.9386 \\\\
+                DSTGN & - & - \\\\
+                DSTIGNN & 0.0430 & 0.9407 \\\\
+                ESG & 0.0468 & 0.9392 \\\\
+                FEDformer & 0.0487 & 0.9190 \\\\
+                GP & 0.0580 & 0.8278 \\\\
+                GRU & - & - \\\\
+                GTS & 0.0442 & 0.9518 \\\\
+                GWN & 0.0486 & 0.9294 \\\\
+                Informer & 0.1521 & 0.8021 \\\\
+                LSTNet & 0.0449 & 0.9354 \\\\
+                MAGL & 0.0444 & 0.9361 \\\\
+                MAGNN & 0.0474 & 0.9339 \\\\
+                MDST-GNN & 0.0431 & 0.9392 \\\\
+                MTGNN & 0.0456 & 0.9372 \\\\
+                MTHetGNN & 0.0451 & 0.9360 \\\\
+                MTNet & 0.0442 & 0.9388 \\\\
+                RNN-GRU & 0.0626 & 0.9223 \\\\
+                SARIMA & 0.0444 & 0.9370 \\\\
+                SCINet & 0.0436 & 0.9396 \\\\
+                SDGL & 0.0455 & 0.9402 \\\\
+                StemGNN & 0.0685 & 0.8738 \\\\
+                TDG4-MSF & 0.0433 & 0.9386 \\\\
+                Theta & 0.0441 & 0.9323 \\\\
+                TPA-LSTM & 0.0444 & 0.9381 \\\\
+                TPGNN & 0.0458 & 0.9306 \\\\
+                TRMF & 0.0563 & 0.8678 \\\\
+                VAR-MLP & 0.0578 & 0.7675 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_38_3_steps",
+                title: "Table 38 - 3 steps horizon",
+                dataset: "Solar energy",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.1708 & 0.9866 \\\\
+                AGCRN & 0.1840 & 0.9841 \\\\
+                AGLG-GRU & 0.1762 & 0.9842 \\\\
+                AR & 0.2435 & 0.9710 \\\\
+                ARIMA & 0.2328 & 0.9739 \\\\
+                Autoformer & 0.1935 & 0.9784 \\\\
+                Crossformer & 0.1758 & 0.9801 \\\\
+                DPGNN & 0.1794 & 0.9850 \\\\
+                DSTGN & 0.1787 & 0.9867 \\\\
+                DSTIGNN & 0.1684 & 0.9869 \\\\
+                ESG & 0.1708 & 0.9865 \\\\
+                FEDformer & 0.1901 & 0.9827 \\\\
+                GP & 0.2259 & 0.9751 \\\\
+                GRU & 0.1932 & 0.9823 \\\\
+                GTS & 0.1842 & 0.9842 \\\\
+                GWN & 0.1773 & 0.9846 \\\\
+                HyDCNN & 0.1806 & 0.9865 \\\\
+                Informer & 0.2134 & 0.9715 \\\\
+                LSTNet & 0.1843 & 0.9843 \\\\
+                MAGL & 0.1678 & 0.9869 \\\\
+                MAGNN & 0.1771 & 0.9853 \\\\
+                MDST-GNN & 0.1764 & 0.9855 \\\\
+                MTGNN & 0.1778 & 0.9852 \\\\
+                MTGODE & 0.1693 & 0.9868 \\\\
+                MTHetGNN & 0.1838 & 0.9845 \\\\
+                MTNet & 0.1847 & 0.9840 \\\\
+                RNN-GRU & 0.1932 & 0.9823 \\\\
+                SARIMA & 0.2227 & 0.9760 \\\\
+                SCINet & 0.1775 & 0.9853 \\\\
+                SDGL & 0.1699 & 0.9866 \\\\
+                SDLGNN & 0.1720 & 0.9864 \\\\
+                SDLGNN-Corr & 0.1806 & 0.9848 \\\\
+                StemGNN & 0.1839 & 0.9841 \\\\
+                STG-NCDE & 0.2346 & 0.9748 \\\\
+                TDG4-MSF & 0.1746 & 0.9858 \\\\
+                Theta & 0.2442 & 0.9685 \\\\
+                TPA-LSTM & 0.1803 & 0.9850 \\\\
+                TPGNN & 0.1850 & 0.9840 \\\\
+                VAR-MLP & 0.1922 & 0.9829 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_38_6_steps",
+                title: "Table 38 - 6 steps horizon",
+                dataset: "Solar energy",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.2188 & 0.9768 \\\\
+                AGCRN & 0.2432 & 0.9708 \\\\
+                AGLG-GRU & 0.2302 & 0.9682 \\\\
+                AR & 0.3790 & 0.9263 \\\\
+                ARIMA & 0.3413 & 0.9402 \\\\
+                Autoformer & 0.2604 & 0.9651 \\\\
+                Crossformer & 0.2304 & 0.9679 \\\\
+                DPGNN & 0.2364 & 0.9724 \\\\
+                DSTGN & 0.2358 & 0.9721 \\\\
+                DSTIGNN & 0.2165 & 0.9773 \\\\
+                ESG & 0.2278 & 0.9743 \\\\
+                FEDformer & 0.2444 & 0.9606 \\\\
+                GP & 0.3286 & 0.9448 \\\\
+                GRU & 0.2628 & 0.9675 \\\\
+                GTS & 0.2691 & 0.9645 \\\\
+                GWN & 0.2279 & 0.9743 \\\\
+                HyDCNN & 0.2335 & 0.9747 \\\\
+                Informer & 0.2701 & 0.9549 \\\\
+                LSTNet & 0.2559 & 0.9690 \\\\
+                MAGL & 0.2220 & 0.9759 \\\\
+                MAGNN & 0.2361 & 0.9724 \\\\
+                MDST-GNN & 0.2321 & 0.9735 \\\\
+                MTGNN & 0.2348 & 0.9726 \\\\
+                MTGODE & 0.2171 & 0.9771 \\\\
+                MTHetGNN & 0.2600 & 0.9681 \\\\
+                MTNet & 0.2398 & 0.9723 \\\\
+                RNN-GRU & 0.2628 & 0.9675 \\\\
+                SARIMA & 0.3228 & 0.9461 \\\\
+                SCINet & 0.2301 & 0.9739 \\\\
+                SDGL & 0.2222 & 0.9762 \\\\
+                SDLGNN & 0.2249 & 0.9757 \\\\
+                SDLGNN-Corr & 0.2378 & 0.9722 \\\\
+                StemGNN & 0.2612 & 0.9679 \\\\
+                STG-NCDE & 0.2908 & 0.9605 \\\\
+                TDG4-MSF & 0.2348 & 0.9727 \\\\
+                Theta & 0.3327 & 0.9445 \\\\
+                TPA-LSTM & 0.2347 & 0.9742 \\\\
+                TPGNN & 0.2412 & 0.9716 \\\\
+                VAR-MLP & 0.2679 & 0.9655 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_38_12_steps",
+                title: "Table 38 - 12 steps horizon",
+                dataset: "Solar energy",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.2897 & 0.9551 \\\\
+                AGCRN & 0.3185 & 0.9487 \\\\
+                AGLG-GRU & 0.3021 & 0.9532 \\\\
+                AR & 0.5911 & 0.8107 \\\\
+                ARIMA & 0.4531 & 0.8886 \\\\
+                Autoformer & 0.3959 & 0.9111 \\\\
+                Crossformer & 0.3101 & 0.9437 \\\\
+                DPGNN & 0.3003 & 0.9543 \\\\
+                DSTGN & 0.3079 & 0.9513 \\\\
+                DSTIGNN & 0.2863 & 0.9584 \\\\
+                ESG & 0.3073 & 0.9519 \\\\
+                FEDformer & 0.3502 & 0.9275 \\\\
+                GP & 0.5200 & 0.8518 \\\\
+                GRU & 0.4163 & 0.9150 \\\\
+                GTS & 0.3259 & 0.9481 \\\\
+                GWN & 0.3068 & 0.9527 \\\\
+                HyDCNN & 0.3094 & 0.9515 \\\\
+                Informer & 0.4331 & 0.8985 \\\\
+                LSTNet & 0.3254 & 0.9467 \\\\
+                MAGL & 0.2998 & 0.9550 \\\\
+                MAGNN & 0.3015 & 0.9539 \\\\
+                MDST-GNN & 0.3082 & 0.9519 \\\\
+                MTGNN & 0.3109 & 0.9509 \\\\
+                MTGODE & 0.2901 & 0.9577 \\\\
+                MTHetGNN & 0.3169 & 0.9486 \\\\
+                MTNet & 0.3251 & 0.9462 \\\\
+                RNN-GRU & 0.4163 & 0.9150 \\\\
+                SARIMA & 0.4512 & 0.8900 \\\\
+                SCINet & 0.2997 & 0.9550 \\\\
+                SDGL & 0.2924 & 0.9565 \\\\
+                SDLGNN & 0.3024 & 0.9547 \\\\
+                SDLGNN-Corr & 0.3042 & 0.9534 \\\\
+                StemGNN & 0.3564 & 0.9395 \\\\
+                STG-NCDE & 0.5149 & 0.8639 \\\\
+                TDG4-MSF & 0.3082 & 0.9527 \\\\
+                Theta & 0.4488 & 0.8979 \\\\
+                TPA-LSTM & 0.3234 & 0.9487 \\\\
+                TPGNN & 0.3059 & 0.9529 \\\\
+                VAR-MLP & 0.4244 & 0.9058 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_38_24_steps",
+                title: "Table 38 - 24 steps horizon",
+                dataset: "Solar energy",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.4128 & 0.9060 \\\\
+                AGCRN & 0.4141 & 0.9087 \\\\
+                AGLG-GRU & 0.4130 & 0.9084 \\\\
+                AR & 0.8699 & 0.5314 \\\\
+                ARIMA & 0.5810 & 0.8133 \\\\
+                Autoformer & 0.6064 & 0.8180 \\\\
+                Crossformer & 0.4115 & 0.9001 \\\\
+                DPGNN & 0.4091 & 0.9117 \\\\
+                DSTGN & - & - \\\\
+                DSTIGNN & 0.4064 & 0.9118 \\\\
+                ESG & 0.4101 & 0.9100 \\\\
+                FEDformer & 0.4851 & 0.8876 \\\\
+                GP & 0.7973 & 0.5971 \\\\
+                GRU & - & - \\\\
+                GTS & 0.4796 & 0.8678 \\\\
+                GWN & 0.4206 & 0.9055 \\\\
+                HyDCNN & - & - \\\\
+                Informer & 0.7017 & 0.7921 \\\\
+                LSTNet & 0.4643 & 0.8870 \\\\
+                MAGL & 0.4188 & 0.9057 \\\\
+                MAGNN & 0.4108 & 0.9097 \\\\
+                MDST-GNN & 0.4119 & 0.9103 \\\\
+                MTGNN & 0.4270 & 0.9031 \\\\
+                MTGODE & - & - \\\\
+                MTHetGNN & 0.4231 & 0.9031 \\\\
+                MTNet & 0.4285 & 0.9013 \\\\
+                RNN-GRU & 0.4852 & 0.8823 \\\\
+                SARIMA & 0.5714 & 0.8184 \\\\
+                SCINet & 0.4081 & 0.9112 \\\\
+                SDGL & 0.4047 & 0.9119 \\\\
+                SDLGNN & 0.4184 & 0.9051 \\\\
+                SDLGNN-Corr & 0.4173 & 0.9067 \\\\
+                StemGNN & 0.4768 & 0.8740 \\\\
+                STG-NCDE & - & - \\\\
+                TDG4-MSF & 0.4031 & 0.9143 \\\\
+                Theta & 0.6092 & 0.8139 \\\\
+                TPA-LSTM & 0.4389 & 0.9081 \\\\
+                TPGNN & 0.3498 & 0.9710 \\\\
+                VAR-MLP & 0.6841 & 0.7149 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_39_3_steps",
+                title: "Table 39 - 3 steps horizon",
+                dataset: "Traffic",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.4047 & 0.9028 \\\\
+                AGCRN & 0.4379 & 0.8850 \\\\
+                AGLG-GRU & 0.4173 & 0.8958 \\\\
+                AR & 0.5991 & 0.7752 \\\\
+                ARIMA & 0.5841 & 0.7959 \\\\
+                GP & 0.6082 & 0.7831 \\\\
+                GTS & 0.4665 & 0.8695 \\\\
+                GWN & 0.4484 & 0.8801 \\\\
+                HyDCNN & 0.4198 & 0.8915 \\\\
+                LSNet & 0.4777 & 0.8721 \\\\
+                MAGL & 0.4058 & 0.9013 \\\\
+                MAGNN & 0.4097 & 0.8992 \\\\
+                MDST-GNN & 0.4162 & 0.8958 \\\\
+                MTGNN & 0.4162 & 0.8963 \\\\
+                MTGODE & 0.4127 & 0.9000 \\\\
+                MTHetGNN & 0.4826 & 0.8643 \\\\
+                MTNet & 0.4764 & 0.8728 \\\\
+                RNN-GRU & 0.5358 & 0.8511 \\\\
+                SARIMA & 0.5823 & 0.7967 \\\\
+                SCINet & 0.4216 & 0.8920 \\\\
+                SDGL & 0.4142 & 0.9010 \\\\
+                SDLGNN & 0.4053 & 0.9017 \\\\
+                SDLGNN-Corr & 0.4227 & 0.8937 \\\\
+                TDG4-MSF & 0.4029 & 0.9014 \\\\
+                Theta & 0.6071 & 0.7768 \\\\
+                TPA-LSTM & 0.4487 & 0.8812 \\\\
+                TPGNN & 0.3989 & 0.9232 \\\\
+                TRMF & 0.6708 & 0.6964 \\\\
+                VAR-MLP & 0.5582 & 0.8245 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_39_6_steps",
+                title: "Table 39 - 6 steps horizon",
+                dataset: "Traffic",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.4201 & 0.8928 \\\\
+                AGCRN & 0.4635 & 0.8670 \\\\
+                AGLG-GRU & 0.4722 & 0.8541 \\\\
+                AR & 0.6218 & 0.7568 \\\\
+                ARIMA & 0.6194 & 0.7655 \\\\
+                GP & 0.6772 & 0.7406 \\\\
+                GTS & 0.4779 & 0.8582 \\\\
+                GWN & 0.4689 & 0.8674 \\\\
+                HyDCNN & 0.4290 & 0.8855 \\\\
+                LSNet & 0.4893 & 0.8690 \\\\
+                MAGL & 0.4189 & 0.8935 \\\\
+                MAGNN & 0.4555 & 0.8753 \\\\
+                MDST-GNN & 0.4461 & 0.8803 \\\\
+                MTGNN & 0.4754 & 0.8667 \\\\
+                MTGODE & 0.4259 & 0.8945 \\\\
+                MTHetGNN & 0.5198 & 0.8452 \\\\
+                MTNet & 0.4855 & 0.8681 \\\\
+                RNN-GRU & 0.5522 & 0.8405 \\\\
+                SARIMA & 0.5974 & 0.7837 \\\\
+                SCINet & 0.4414 & 0.8809 \\\\
+                SDGL & 0.4475 & 0.8825 \\\\
+                SDLGNN & 0.4209 & 0.8925 \\\\
+                SDLGNN-Corr & 0.4378 & 0.8846 \\\\
+                TDG4-MSF & 0.4196 & 0.8925 \\\\
+                Theta & 0.6241 & 0.7606 \\\\
+                TPA-LSTM & 0.4658 & 0.8717 \\\\
+                TPGNN & 0.4715 & 0.8945 \\\\
+                TRMF & 0.6261 & 0.7430 \\\\
+                VAR-MLP & 0.6570 & 0.7695 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_39_12_steps",
+                title: "Table 39 - 12 steps horizon",
+                dataset: "Traffic",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.4299 & 0.8876 \\\\
+                AGCRN & 0.4694 & 0.8679 \\\\
+                AGLG-GRU & 0.4427 & 0.8755 \\\\
+                AR & 0.6252 & 0.7544 \\\\
+                ARIMA & 0.6197 & 0.7652 \\\\
+                GP & 0.6406 & 0.7671 \\\\
+                GTS & 0.4792 & 0.8589 \\\\
+                GWN & 0.4725 & 0.8646 \\\\
+                HyDCNN & 0.4352 & 0.8858 \\\\
+                LSNet & 0.4950 & 0.8614 \\\\
+                MAGL & 0.4308 & 0.8871 \\\\
+                MAGNN & 0.4423 & 0.8815 \\\\
+                MDST-GNN & 0.4377 & 0.8841 \\\\
+                MTGNN & 0.4461 & 0.8794 \\\\
+                MTGODE & 0.4329 & 0.8899 \\\\
+                MTHetGNN & 0.5147 & 0.8744 \\\\
+                MTNet & 0.4877 & 0.8644 \\\\
+                RNN-GRU & 0.5562 & 0.8345 \\\\
+                SARIMA & 0.6002 & 0.7811 \\\\
+                SCINet & 0.4495 & 0.8772 \\\\
+                SDGL & 0.4584 & 0.8760 \\\\
+                SDLGNN & 0.4313 & 0.8868 \\\\
+                SDLGNN-Corr & 0.4576 & 0.8746 \\\\
+                TDG4-MSF & 0.4294 & 0.8864 \\\\
+                Theta & 0.6271 & 0.7591 \\\\
+                TPA-LSTM & 0.4641 & 0.8717 \\\\
+                TPGNN & 0.4476 & 0.9028 \\\\
+                TRMF & 0.5956 & 0.7748 \\\\
+                VAR-MLP & 0.6023 & 0.7929 \\\\
+                \\hline
+                \\end{tabular}`
+            },
+            {
+                name: "table_39_24_steps",
+                title: "Table 39 - 24 steps horizon",
+                dataset: "Traffic",
+                latexSource: `\\begin{tabular}{|l|c|c|}
+                \\hline
+                Model & RRSE & CORR \\\\
+                \\hline
+                ADLGNN & 0.4416 & 0.8818 \\\\
+                AGCRN & 0.4707 & 0.8664 \\\\
+                AGLG-GRU & 0.4526 & 0.8842 \\\\
+                AR & 0.6300 & 0.7519 \\\\
+                ARIMA & 0.6248 & 0.7610 \\\\
+                GP & 0.5995 & 0.7909 \\\\
+                GTS & 0.4766 & 0.8573 \\\\
+                GWN & 0.4741 & 0.8646 \\\\
+                HyDCNN & 0.4423 & 0.8819 \\\\
+                LSNet & 0.4973 & 0.8588 \\\\
+                MAGL & 0.4417 & 0.8810 \\\\
+                MAGNN & 0.4434 & 0.8813 \\\\
+                MDST-GNN & 0.4452 & 0.8792 \\\\
+                MTGNN & 0.4535 & 0.8810 \\\\
+                MTGODE & - & - \\\\
+                MTHetGNN & 0.5250 & 0.8418 \\\\
+                MTNet & 0.5023 & 0.8570 \\\\
+                RNN-GRU & 0.5633 & 0.8300 \\\\
+                SARIMA & 0.6151 & 0.7697 \\\\
+                SCINet & 0.4453 & 0.8825 \\\\
+                SDGL & 0.4571 & 0.8766 \\\\
+                SDLGNN & 0.4444 & 0.8801 \\\\
+                SDLGNN-Corr & 0.4579 & 0.8784 \\\\
+                TDG4-MSF & 0.4366 & 0.8834 \\\\
+                Theta & 0.6012 & 0.7830 \\\\
+                TPA-LSTM & 0.4765 & 0.8629 \\\\
+                TPGNN & 0.4696 & 0.8858 \\\\
+                TRMF & 0.6442 & 0.7278 \\\\
+                VAR-MLP & 0.6146 & 0.7891 \\\\
+                \\hline
+                \\end{tabular}`
+            }
+        ];
+
+        let parsedTables = [];
+        let currentChart = null;
+        let selectedTable = null;
+        let selectedColumnIndex = null;
+        let sortedTable = null;
+        let sortDirection = {}; // Track sort direction for each column
+        let tableCategories = {}; // Group tables by category
+
+        // Function to check if a column name is a metric where higher values are better
+        function isHigherBetterMetric(columnName) {
+            const lowerName = columnName.toLowerCase().trim();
+            return lowerName.includes('accuracy') || 
+                lowerName.includes('precision') || 
+                lowerName.includes('recall') || 
+                lowerName.includes('f1') || 
+                lowerName.includes('corr');
+        }
+
+        // Function to apply bold formatting to min/max values in table
+        function applyBoldFormatting(tableData, headers) {
+            // Skip the first column (model names)
+            for (let colIndex = 1; colIndex < headers.length; colIndex++) {
+                const columnName = headers[colIndex];
+                const isHigherBetter = isHigherBetterMetric(columnName);
+                
+                // Extract numeric values from this column
+                const numericValues = [];
+                const valueIndices = [];
+                
+                tableData.forEach((row, rowIndex) => {
+                    const value = row[colIndex].toString().trim();
+                    // Handle missing data
+                    if (value !== '-' && value !== '—' && value !== '' && value !== 'N/A' && value !== 'n/a') {
+                        const numValue = parseFloat(value);
+                        if (!isNaN(numValue)) {
+                            numericValues.push(numValue);
+                            valueIndices.push(rowIndex);
+                        }
+                    }
+                });
+                
+                if (numericValues.length > 0) {
+                    // Find min and max values
+                    const minValue = Math.min(...numericValues);
+                    const maxValue = Math.max(...numericValues);
+                    const targetValue = isHigherBetter ? maxValue : minValue;
+                    
+                    // Apply formatting to all cells with the target value
+                    valueIndices.forEach(rowIndex => {
+                        const cellValue = parseFloat(tableData[rowIndex][colIndex]);
+                        if (cellValue === targetValue) {
+                            const cssClass = isHigherBetter ? 'max-value' : 'min-value';
+                            tableData[rowIndex][colIndex] = `<span class="${cssClass}">${tableData[rowIndex][colIndex]}</span>`;
+                        }
+                    });
+                }
+            }
+        }
+
+        // Function to clean HTML entities and special characters
+        function cleanText(text) {
+            // Create a temporary element to decode HTML entities
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = text;
+            let cleaned = tempElement.textContent || tempElement.innerText || '';
+
+            // Handle common LaTeX/HTML entities
+            cleaned = cleaned
+                .replace(/\\&/g, '&')
+                .replace(/\\\$/g, '$')
+                .replace(/\\%/g, '%')
+                .replace(/\\_/g, '_')
+                .replace(/\\#/g, '#')
+                .replace(/\\\\/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            return cleaned;
+        }
+
+        // Function to parse a LaTeX table
+        function parseLatexTable(latexSource, name, title, dataset) {
+            const cleanSource = latexSource
+                .replace(/%.*$/gm, '') // Remove comments
+                .replace(/\s+/g, ' ') // Normalize spaces
+                .trim();
+
+            // Extract tabular content
+            const tabularMatch = cleanSource.match(/\\begin\{tabular\}[\s\S]*?\\end\{tabular\}/);
+            if (!tabularMatch) {
+                throw new Error('No tabular environment found in LaTeX source');
+            }
+
+            const tabularContent = tabularMatch[0];
+
+            // Extract rows by splitting on \\\\
+            const rows = tabularContent
+                .replace(/\\begin\{tabular\}\{[^}]*\}/, '') // Remove begin statement
+                .replace(/\\end\{tabular\}/, '') // Remove end statement
+                .replace(/\\hline/g, '') // Remove hlines
+                .split('\\\\')
+                .map(row => row.trim())
+                .filter(row => row.length > 0);
+
+            if (rows.length === 0) {
+                throw new Error('No rows found in the table');
+            }
+
+            // Parse headers (first row)
+            const headers = rows[0]
+                .split('&')
+                .map(cell => cleanText(cell))
+                .filter(cell => cell.length > 0);
+
+            // Parse data rows
+            const data = rows.slice(1).map(row =>
+                row.split('&')
+                    .map(cell => cleanText(cell))
+                    .filter(cell => cell.length > 0)
+            ).filter(row => row.length > 0);
+
+            // Ensure all rows have the same number of columns as headers
+            const validData = data.filter(row => row.length === headers.length);
+
+            return {
+                name: name || `table_${Date.now()}`,
+                title: title || 'Parsed LaTeX Table',
+                dataset: dataset,
+                headers,
+                data: validData
+            };
+        }
+
+        // Function to detect numeric columns
+        function detectNumericColumns(headers, data) {
+            const numericColumns = [];
+
+            for (let colIndex = 1; colIndex < headers.length; colIndex++) { // Skip first column (usually labels)
+                let numericCount = 0;
+                let totalValues = 0;
+
+                for (const row of data) {
+                    if (row[colIndex]) {
+                        totalValues++;
+                        // Consider a value numeric if it's a number or "-" (missing data)
+                        const value = row[colIndex].toString().trim();
+                        if (value === '-' || value === '—' || !isNaN(parseFloat(value))) {
+                            numericCount++;
+                        }
+                    }
+                }
+
+                // Column is considered numeric if most values are numeric or missing data markers
+                if (totalValues > 0 && (numericCount / totalValues) >= 0.7) {
+                    numericColumns.push(colIndex);
+                }
+            }
+
+            return numericColumns;
+        }
+
+        // Initialize the application
+        function initializeApp() {
+            // Parse all LaTeX tables
+            parsedTables = latexTables.map(table => {
+                try {
+                    return parseLatexTable(table.latexSource, table.name, table.title, table.dataset);
+                } catch (error) {
+                    console.error(`Error parsing table ${table.name}:`, error);
+                    return null;
+                }
+            }).filter(table => table !== null);
+
+            // Group tables by category
+            groupTablesByCategory();
+
+            // Populate the category select
+            populateCategorySelect();
+        }
+
+        // Function to group tables by category
+        function groupTablesByCategory() {
+            tableCategories = {};
+
+            parsedTables.forEach((table, index) => {
+                const title = table.title;
+                let category;
+                let specific = null;
+
+                // Check if title contains " – " (em dash) or " - " (hyphen)
+                if (title.includes(' – ')) {
+                    const parts = title.split(' – ');
+                    category = parts[0];
+                    specific = parts[1];
+                } else if (title.includes(' - ')) {
+                    const parts = title.split(' - ');
+                    category = parts[0];
+                    specific = parts[1];
+                } else {
+                    category = title;
+                }
+
+                if (!tableCategories[category]) {
+                    tableCategories[category] = [];
+                }
+
+                tableCategories[category].push({
+                    index: index,
+                    table: table,
+                    specific: specific
+                });
+            });
+        }
+
+        // Function to populate category select
+        function populateCategorySelect() {
+            const categorySelect = document.getElementById('categorySelect');
+
+            Object.keys(tableCategories).sort().forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        // Function called when a category is selected
+        function selectCategory() {
+            const categorySelect = document.getElementById('categorySelect');
+            const tableSelect = document.getElementById('tableSelect');
+            const columnSelect = document.getElementById('columnSelect');
+            const datasetInfo = document.getElementById('datasetInfo');
+            const datasetInfoContent = document.getElementById('datasetInfoContent');
+
+            const selectedCategory = categorySelect.value;
+
+            // Clear previous selections
+            tableSelect.innerHTML = '<option value="">-- Select additional details --</option>';
+            columnSelect.innerHTML = '<option value="">-- First select a table --</option>';
+            columnSelect.disabled = true;
+
+            // Clear current displays
+            selectedTable = null;
+            sortedTable = null;
+            sortDirection = {};
+            document.getElementById('tableDisplay').innerHTML = '<div class="placeholder">Select a table from the dropdown menu above to display it here</div>';
+            clearChart();
+
+            if (selectedCategory === '') {
+                tableSelect.disabled = true;
+                datasetInfo.style.display = 'none';
+                return;
+            } else {
+                const tablesInCategory = tableCategories[selectedCategory];
+                const datasetName = tablesInCategory[0]?.table?.dataset || 'Unknown dataset';
+                
+                datasetInfoContent.innerHTML = `ℹ️ Dataset: <span class="dataset-name">${datasetName}</span>`;
+                datasetInfo.style.display = 'block';
+            }
+
+            // Populate table select with tables from selected category
+            const tablesInCategory = tableCategories[selectedCategory];
+
+            if (tablesInCategory.length === 1 && !tablesInCategory[0].specific) {
+                // Single table without specific variant - auto-select it
+                const tableData = tablesInCategory[0];
+                tableSelect.innerHTML = `<option value="${tableData.index}" selected>${tableData.table.title}</option>`;
+                selectedTable = tableData.table;
+                displayTable(selectedTable);
+                populateColumnSelect(selectedTable);
+                tableSelect.disabled = true;
+            } else {
+                // Multiple tables or tables with specifics - show dropdown
+                tablesInCategory.forEach(tableData => {
+                    const option = document.createElement('option');
+                    option.value = tableData.index;
+                    option.textContent = tableData.specific || tableData.table.title;
+                    tableSelect.appendChild(option);
+                });
+                tableSelect.disabled = false;
+            }
+        }
+
+        // Function called when a table is selected
+        function selectTable() {
+            const tableSelect = document.getElementById('tableSelect');
+            const columnSelect = document.getElementById('columnSelect');
+            const tableDisplay = document.getElementById('tableDisplay');
+
+            const selectedIndex = tableSelect.value;
+
+            if (selectedIndex === '') {
+                selectedTable = null;
+                tableDisplay.innerHTML = '<div class="placeholder">Select a table from the dropdown menu above to display it here</div>';
+                columnSelect.disabled = true;
+                columnSelect.innerHTML = '<option value="">-- First select a table --</option>';
+                clearChart();
+                return;
+            }
+
+            selectedTable = parsedTables[selectedIndex];
+            sortedTable = null; // Reset sorted table
+            sortDirection = {}; // Reset sort directions
+
+            // Display the table
+            displayTable(selectedTable);
+
+            // Populate the column select
+            populateColumnSelect(selectedTable);
+
+            // Clear previous chart
+            clearChart();
+        }
+
+        // Function to sort table data
+        function sortTable(columnIndex) {
+            if (!selectedTable) return;
+
+            // Get current sort direction for this column
+            const currentDirection = sortDirection[columnIndex] || 'none';
+
+            // Reset all sort directions
+            sortDirection = {};
+
+            // Determine new direction
+            let newDirection;
+            if (currentDirection === 'none' || currentDirection === 'desc') {
+                newDirection = 'asc';
+            } else {
+                newDirection = 'desc';
+            }
+
+            sortDirection[columnIndex] = newDirection;
+
+            // Create a copy of the table data to sort
+            const dataToSort = [...selectedTable.data];
+
+            // Sort the data
+            dataToSort.sort((a, b) => {
+                let aVal = a[columnIndex];
+                let bVal = b[columnIndex];
+
+                // Handle missing data markers for sorting
+                const isAMissing = aVal === '-' || aVal === '—' || aVal === '' || aVal === 'N/A';
+                const isBMissing = bVal === '-' || bVal === '—' || bVal === '' || bVal === 'N/A';
+
+                // Missing values always go to the end
+                if (isAMissing && isBMissing) return 0;
+                if (isAMissing) return 1;
+                if (isBMissing) return -1;
+
+                // Try to parse as numbers for numeric comparison
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    // Numeric comparison
+                    return newDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                } else {
+                    // String comparison
+                    aVal = aVal.toString().toLowerCase();
+                    bVal = bVal.toString().toLowerCase();
+                    if (newDirection === 'asc') {
+                        return aVal.localeCompare(bVal);
+                    } else {
+                        return bVal.localeCompare(aVal);
+                    }
+                }
+            });
+
+            // Create sorted table object
+            sortedTable = {
+                ...selectedTable,
+                data: dataToSort
+            };
+
+            // Redisplay the table with sorted data
+            displayTable(sortedTable, columnIndex, newDirection);
+        }
+
+        // Function to display the table
+        function displayTable() {
+            const tableDisplay = document.getElementById('tableDisplay');
+            const datasetInfo = document.getElementById('datasetInfo');
+
+            if (!selectedTable) {
+                tableDisplay.innerHTML = '<div class="placeholder">Select a table from the dropdown menu above to display it here</div>';
+                datasetInfo.style.display = 'none';
+                return;
+            }
+
+            // datasetInfo.style.display = 'none';
+            
+            const tableToUse = sortedTable || selectedTable;
+            
+            // Create a deep copy for formatting to avoid modifying original data
+            const formattedData = tableToUse.data.map(row => [...row]);
+            
+            // Apply bold formatting to min/max values
+            applyBoldFormatting(formattedData, tableToUse.headers);
+            
+            let html = `<table><thead><tr>`;
+            
+            tableToUse.headers.forEach((header, index) => {
+                const sortClass = sortDirection[index] ? `sorted-${sortDirection[index]}` : 'sortable';
+                html += `<th class="${sortClass}" onclick="sortTable(${index})">${header}</th>`;
+            });
+            
+            html += '</tr></thead><tbody>';
+            
+            formattedData.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => {
+                    html += `<td>${cell}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            tableDisplay.innerHTML = html;
+        }
+
+        // Function to populate the column select
+        function populateColumnSelect(table) {
+            const columnSelect = document.getElementById('columnSelect');
+            const numericColumns = detectNumericColumns(table.headers, table.data);
+
+            columnSelect.innerHTML = '<option value="">-- Select metric --</option>';
+
+            numericColumns.forEach(columnIndex => {
+                const option = document.createElement('option');
+                option.value = columnIndex;
+                option.textContent = table.headers[columnIndex];
+                columnSelect.appendChild(option);
+            });
+
+            columnSelect.disabled = false;
+        }
+
+        // Function called when a column is selected
+        function selectColumn() {
+            const columnSelect = document.getElementById('columnSelect');
+            selectedColumnIndex = columnSelect.value;
+
+            if (selectedColumnIndex === '' || !selectedTable) {
+                clearChart();
+                return;
+            }
+
+            generateChart();
+        }
+
+        // Function to generate the chart
+        function generateChart() {
+            if (!selectedTable || selectedColumnIndex === null) return;
+
+            const columnIndex = parseInt(selectedColumnIndex);
+            const columnName = selectedTable.headers[columnIndex];
+
+            // Use original table data (not sorted by table sorting)
+            const labels = selectedTable.data.map(row => row[0]);
+            const rawData = selectedTable.data.map((row, index) => {
+                const value = row[columnIndex].toString().trim();
+                // Handle missing data
+                if (value === '-' || value === '—' || value === '' || value === 'N/A' || value === 'n/a') {
+                    return { value: 0, label: labels[index], isEmpty: true };
+                }
+                return { value: parseFloat(value) || 0, label: labels[index], isEmpty: false };
+            });
+
+            // Sort the data for chart display based on column type
+            const isHigherBetter = isHigherBetterMetric(columnName);
+            const sortedData = rawData.slice().sort((a, b) => {
+                // Handle missing data - put at end regardless of sort order
+                if (a.isEmpty && b.isEmpty) return 0;
+                if (a.isEmpty) return 1;
+                if (b.isEmpty) return -1;
+                
+                // Sort based on whether higher or lower is better
+                return isHigherBetter ? b.value - a.value : a.value - b.value;
+            });
+
+            const sortedLabels = sortedData.map(item => item.label);
+            const sortedValues = sortedData.map(item => item.value);
+
+            clearChart();
+
+            // Calculate dynamic height based on number of rows
+            const numberOfRows = sortedLabels.length;
+            const minBarHeight = 20;
+            const chartPadding = 70;
+            const dynamicHeight = Math.max(300, (numberOfRows * minBarHeight) + chartPadding);
+
+            const chartDisplay = document.getElementById('chartDisplay');
+            chartDisplay.innerHTML = `<div class="chart-wrapper" style="height: ${dynamicHeight}px;"><canvas id="chartCanvas"></canvas></div>`;
+
+            const ctx = document.getElementById('chartCanvas').getContext('2d');
+
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedLabels,
+                    datasets: [{
+                        label: columnName,
+                        data: sortedValues,
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.8)',
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(155, 89, 182, 0.8)',
+                            'rgba(241, 196, 15, 0.8)',
+                            'rgba(231, 76, 60, 0.8)',
+                            'rgba(26, 188, 156, 0.8)',
+                            'rgba(230, 126, 34, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(52, 152, 219, 1)',
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(155, 89, 182, 1)',
+                            'rgba(241, 196, 15, 1)',
+                            'rgba(231, 76, 60, 1)',
+                            'rgba(26, 188, 156, 1)',
+                            'rgba(230, 126, 34, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#ddd',
+                            borderWidth: 1,
+                            cornerRadius: 5,
+                            callbacks: {
+                                label: function (context) {
+                                    const dataIndex = context.dataIndex;
+                                    const sortedItem = sortedData[dataIndex];
+                                    
+                                    if (sortedItem.isEmpty) {
+                                        return columnName + ': No data available';
+                                    }
+                                    return columnName + ': ' + sortedItem.value;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)',
+                            },
+                            ticks: {
+                                color: '#666',
+                                callback: function(value) {
+                                    return value.toString().replace(',', '.');
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: columnName,
+                                color: '#666',
+                                font: {
+                                    size: 14,
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#666',
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Function to clear the chart
+        function clearChart() {
+            if (currentChart) {
+                currentChart.destroy();
+                currentChart = null;
+            }
+            document.getElementById('chartDisplay').innerHTML = '<div class="placeholder">Select a table and a column to generate the chart</div>';
+        }
+
+        // Initialize the app when the page is loaded
+        window.onload = initializeApp;
+    </script>
+</body>
+
+</html>
