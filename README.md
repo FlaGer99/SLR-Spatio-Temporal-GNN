@@ -11,7 +11,7 @@
 
 <div align="center">
 
-<a href="https://doi.org/10.48550/arXiv.2410.22377">[**Pre-print (latest version)**]</a>
+<a href="https://doi.org/10.1016/j.neunet.2025.108269">[**Read the paper**]</a>
 
 </div>
 
@@ -28,20 +28,31 @@
 > [!IMPORTANT]
 > 🚀 **Check out our [interactive resources](#interactive-resources)!**
 
-<!--- (COMMENTATO)
+<br>
+
 If you find this project interesting, please refer to our paper and cite it in your work:
 ```
-Bibtex reference to the paper
+@article{CORRADINI2026108269,
+title = {A systematic literature review of spatio-temporal graph neural network models for time series forecasting and classification},
+journal = {Neural Networks},
+volume = {195},
+pages = {108269},
+year = {2026},
+issn = {0893-6080},
+doi = {https://doi.org/10.1016/j.neunet.2025.108269},
+url = {https://www.sciencedirect.com/science/article/pii/S0893608025011505},
+author = {Flavio Corradini and Flavio Gerosa and Marco Gori and Carlo Lucheroni and Marco Piangerelli and Martina Zannotti}
+}
 ```
--->
+
 
 ## 🗓️ History of the project
-<!--- (COMMENTATO)
-- [2025-05-28] Last version with all conference papers has been submitted to _Neural Networks_
--->
-- [2025-09-08] Additional interactive material has been added to this repository
-- [2025-03-10] Second version has been published on ArXiv
-- [2024-10-29] Initial pre-print available on ArXiv
+- [2025-10-27] Paper accepted by _Neural Networks_
+- [2025-09-08] Additional interactive material added to this repository
+- [2025-05-28] Last version submitted to _Neural Networks_
+- [2025-03-10] Second version published on ArXiv
+- [2024-10-29] Initial pre-print published on ArXiv
+
 
 <div id='interactive-resources'/>
 
